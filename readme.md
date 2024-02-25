@@ -1,5 +1,5 @@
 # Ansible Docker Image
-[![release](https://github.com/jyje/ansible/actions/workflows/release-tag.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/release-tag.yaml)
+[![release](https://github.com/jyje/ansible/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/release.yaml)
 [![main ci.yaml](https://github.com/jyje/ansible/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci.yaml)
 [![develop ci-dev.yaml](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml)
 
