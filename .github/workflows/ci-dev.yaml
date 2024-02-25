@@ -1,4 +1,4 @@
-name: pubilsh-ansible-image
+name: ci-dev
 
 on:
   push:
@@ -23,10 +23,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract short SHA
+        id: get_sha7
+        run: echo "::set-output name=short::$(echo ${{ github.sha }} | cut -c1-7)"
+        
       - name: Publish as GitHub Package
         uses: docker/build-push-action@v5
         with:
-          context: ./ansible
-          file: ./ansible/Dockerfile
+          provenance: false
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: | # latest and commit hash-7 characters
+            ghcr.io/${{ github.repository }}-dev:latest
+            ghcr.io/${{ github.repository }}-dev:${{ steps.get_sha7.outputs.short }}
