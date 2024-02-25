@@ -1,0 +1,32 @@
+name: pubilsh-ansible-image
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish as GitHub Package
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ansible
+          file: ./ansible/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
