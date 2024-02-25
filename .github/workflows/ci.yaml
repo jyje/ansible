@@ -1,4 +1,4 @@
-name: pubilsh-image
+name: ci
 
 on:
   push:
