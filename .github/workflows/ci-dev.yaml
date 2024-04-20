@@ -6,20 +6,31 @@ on:
       - develop
 
 jobs:
-  build:
+  init:
     runs-on: ubuntu-latest
-
+    outputs:
+      run_build: ${{ steps.check_flag.outputs.run_build }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check for --no-ci and stop job if found
+      - name: Check for --no-ci flag in commit message
+        id: check_flag
         run: |
           echo "Checking commit message for --no-ci flag..."
           if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
-            echo "--no-ci found in commit message. Stopping job."
-            exit 78
+            echo "::set-output name=run_build::false"
+          else
+            echo "::set-output name=run_build::true"
           fi
+
+  build:
+    needs: init
+    if: needs.init.outputs.run_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,7 +49,6 @@ jobs:
       - name: Publish as GitHub Package
         uses: docker/build-push-action@v5
         with:
-          provenance: false
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
