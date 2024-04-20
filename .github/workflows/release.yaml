@@ -2,13 +2,30 @@ name: release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      is_valid_branch: ${{ steps.check_branch.outputs.is_valid }}
+    steps:
+      - name: Check if the branch is valid
+        id: check_branch
+        env:
+          ALLOWED_BRANCH: "main"
+        run: |
+          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+          if [[ "$CURRENT_BRANCH" == "$ALLOWED_BRANCH" ]]; then
+            echo "is_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_valid=false" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: init
+    if: ${{ needs.init.outputs.is_valid_branch == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +43,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract tag name
-        id: get_version
-        run: |
-          echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Check tag format
         run: |
