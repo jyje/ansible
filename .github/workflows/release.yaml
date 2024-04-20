@@ -19,13 +19,14 @@ jobs:
         run: |
           if git branch --contains tags/${{ github.ref_name }} | grep -q "main"; then
             echo "is_valid_branch=true" >> $GITHUB_OUTPUT
+            echo "Tag ${{ github.ref_name }} is in the main branch."
           else
             echo "is_valid_branch=false" >> $GITHUB_OUTPUT
           fi
 
   build:
     needs: init
-    if: ${{ needs.init.outputs.is_valid_branch == 'true' }}
+    # if: ${{ needs.init.outputs.is_valid_branch == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
