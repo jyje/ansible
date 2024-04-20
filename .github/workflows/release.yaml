@@ -18,9 +18,9 @@ jobs:
         run: |
           CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
           if [[ "$CURRENT_BRANCH" == "$ALLOWED_BRANCH" ]]; then
-            echo "is_valid=true" >> $GITHUB_OUTPUT
+            echo "is_valid_branch=true" >> $GITHUB_OUTPUT
           else
-            echo "is_valid=false" >> $GITHUB_OUTPUT
+            echo "is_valid_branch=false" >> $GITHUB_OUTPUT
           fi
 
   build:
