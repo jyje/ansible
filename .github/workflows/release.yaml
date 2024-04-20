@@ -13,7 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
+      - name: Show branch
+        id: show_branch
+        run: |
+          git branch --contains tags/${{ github.ref_name }} | grep -q "develop"
+
       - name: Check if the current tag is in the main branch
         id: check_branch
         run: |
