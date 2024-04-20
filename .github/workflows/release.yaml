@@ -13,13 +13,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3 # 최신 버전
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4 # 최신 버전 확인
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4 # 최신 버전 확인
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -27,32 +27,33 @@ jobs:
 
       - name: Extract tag name
         id: get_version
-        run: echo "::set-output name=image_version::${GITHUB_REF#refs/tags/}"
+        run: |
+          echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Check tag format
         run: |
-          TAG_NAME="${{ steps.get_version.outputs.image_version }}"
+          TAG_NAME="${{ env.image_version }}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
             exit 1
           fi
 
       - name: Publish as GitHub Package
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v3 # 이전 예제와 동일한 버전 사용, 최신 확인 필요
         with:
-          provenance: false
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.image_version }}
+            ghcr.io/${{ github.repository }}:${{ env.image_version }}
 
       - name: Create Release
         if: success()
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v2 # 최신 버전 확인
         with:
-          tag: ${{ steps.get_version.outputs.image_version }}
-          name: Release ${{ steps.get_version.outputs.image_version }}
+          tag: ${{ env.image_version }}
+          name: Release ${{ env.image_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
