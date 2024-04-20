@@ -6,9 +6,28 @@ on:
       - develop
 
 jobs:
-  build:
+  init:
     runs-on: ubuntu-latest
+    outputs:
+      run_build: ${{ steps.check_flag.outputs.run_build }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Check for --no-ci flag in commit message
+        id: check_flag
+        run: |
+          echo "Checking commit message for --no-ci flag..."
+          if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
+            echo "run_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "run_build=true" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: init
+    if: ${{ needs.init.outputs.run_build == 'true' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,17 +43,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract short SHA
-        id: get_sha7
-        run: echo "::set-output name=short::$(echo ${{ github.sha }} | cut -c1-7)"
-        
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
       - name: Publish as GitHub Package
         uses: docker/build-push-action@v5
         with:
-          provenance: false
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: | # latest and commit hash-7 characters
+          tags: |
             ghcr.io/${{ github.repository }}-dev:latest
-            ghcr.io/${{ github.repository }}-dev:${{ steps.get_sha7.outputs.short }}
+            ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
