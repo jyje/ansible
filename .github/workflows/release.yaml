@@ -6,32 +6,7 @@ on:
       - "v*"
 
 jobs:
-  init:
-    runs-on: ubuntu-latest
-    outputs:
-      is_valid_branch: ${{ steps.check_branch.outputs.is_valid }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Show branch
-        id: show_branch
-        run: |
-          git branch --contains tags/${{ github.ref_name }} | grep -q "develop"
-
-      - name: Check if the current tag is in the main branch
-        id: check_branch
-        run: |
-          if git branch --contains tags/${{ github.ref_name }} | grep -q "main"; then
-            echo "is_valid_branch=true" >> $GITHUB_OUTPUT
-            echo "Tag ${{ github.ref_name }} is in the main branch."
-          else
-            echo "is_valid_branch=false" >> $GITHUB_OUTPUT
-          fi
-
-  build:
-    needs: init
-    # if: ${{ needs.init.outputs.is_valid_branch == 'true' }}
+  build-and-release:
     runs-on: ubuntu-latest
 
     steps:
