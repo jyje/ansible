@@ -11,13 +11,13 @@ jobs:
     outputs:
       is_valid_branch: ${{ steps.check_branch.outputs.is_valid }}
     steps:
-      - name: Check if the branch is valid
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check if the current tag is in the main branch
         id: check_branch
-        env:
-          ALLOWED_BRANCH: "main"
         run: |
-          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
-          if [[ "$CURRENT_BRANCH" == "$ALLOWED_BRANCH" ]]; then
+          if git branch --contains ${{ github.ref }} | grep -q "main"; then
             echo "is_valid_branch=true" >> $GITHUB_OUTPUT
           else
             echo "is_valid_branch=false" >> $GITHUB_OUTPUT
