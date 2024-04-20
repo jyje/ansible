@@ -17,7 +17,7 @@ jobs:
       - name: Check if the current tag is in the main branch
         id: check_branch
         run: |
-          if git branch --contains ${{ github.ref }} | grep -q "main"; then
+          if git branch --contains tags/${{ github.ref_name }} | grep -q "main"; then
             echo "is_valid_branch=true" >> $GITHUB_OUTPUT
           else
             echo "is_valid_branch=false" >> $GITHUB_OUTPUT
