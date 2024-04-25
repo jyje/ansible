@@ -34,10 +34,10 @@ docker pull ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v9.4.0`, use the following command:
+You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v9.5.1`, use the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v9.4.0
+docker pull ghcr.io/jyje/ansible:v9.5.1
 ```
 
 
