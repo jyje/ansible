@@ -1,4 +1,4 @@
-FROM docker.io/library/python:3.11-slim
+FROM docker.io/library/python:3.12-slim
 
 LABEL org.opencontainers.image.source=https://github.com/jyje/ansible
 LABEL org.opencontainers.image.description="Ansible Image"
