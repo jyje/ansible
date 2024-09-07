@@ -1,0 +1,61 @@
+name: cron-fetch-pip
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  check-ansible-version:
+    name: 🔍 Check Ansible Version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install pip-tools
+        run: pip install pip-tools
+
+      - name: Check for new Ansible version
+        id: check_version
+        run: |
+          NEW_VERSION=$(pip index versions ansible | grep -oP '(?<=Available versions: )\d+\.\d+\.\d+' | head -1)
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Check for existing PR
+        run: |
+          PR_TITLE="[v${{ env.NEW_VERSION }}] update ansible version"
+          if gh pr list --search "$PR_TITLE" --json title | jq -e '.[] | select(.title == "'$PR_TITLE'")'; then
+            echo "PR for version ${{ env.NEW_VERSION }} already exists. Exiting."
+            exit 0
+          fi
+
+      - name: Fetch tags
+        run: git fetch --unshallow --tags
+
+      - name: Check for existing tag
+        run: |
+          if git tag --list "v${{ env.NEW_VERSION }}"; then
+            echo "Tag v${{ env.NEW_VERSION }} already exists. Exiting."
+            exit 0
+          fi
+
+      - name: Create new branch and update version
+        run: |
+          git checkout -b version/${{ env.NEW_VERSION }} origin/main
+          echo "ansible==${{ env.NEW_VERSION }}" > requirements.txt
+          git add requirements.txt
+          git commit -m "✨ version: for v${{ env.NEW_VERSION }}"
+          git push origin version/${{ env.NEW_VERSION }}
+
+      - name: Create PR
+        run: |
+          gh pr create \
+            --title "[v${{ env.NEW_VERSION }}] update ansible version" \
+            --body "Automatically created PR to update Ansible version to v${{ env.NEW_VERSION }}" \
+            --base main \
+            --head version/${{ env.NEW_VERSION }}
