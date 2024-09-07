@@ -1,6 +1,6 @@
 # Unofficial Ansible Docker Image
-[![release](https://github.com/jyje/ansible/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/release.yaml)
-[![develop ci-dev.yaml](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml)
+[![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
+[![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 
 🧑🏼‍🔧 This repository contains the CI pipeline for building an Ansible Docker image. It also provides a repository on ghcr.io for your DevOps usage. Supported architectures are `amd64`, `arm64`.
 

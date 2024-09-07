@@ -1,4 +1,4 @@
-name: release
+name: ci-main
 
 on:
   push:
@@ -6,12 +6,51 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  init:
     runs-on: ubuntu-latest
-
+    outputs:
+      step_init: ${{ steps.check_flag.outputs.step_init }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check for --no-ci flag in commit message
+        id: check_flag
+        run: |
+          echo "Checking commit message for --no-ci flag..."
+          if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
+            echo "step_init=false" >> $GITHUB_OUTPUT
+          else
+            echo "step_init=true" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-release:
+    needs: init
+    if: ${{ needs.init.outputs.step_init == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract tag
+        run: |
+          echo "image_version=v$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')" >> $GITHUB_ENV
+      
+      - name: Check tag
+        run: |
+          # Check if the tag is in the correct format
+          TAG_NAME="${{ env.image_version }}"
+          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
+            exit 1
+          fi
+
+          # Check if the tag already exists
+          TAG_EXISTS=$(git tag --list $TAG_NAME)
+          if [ -n "$TAG_EXISTS" ]; then
+            echo "Tag $TAG_NAME already exists."
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -22,18 +61,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract tag name
-        run: |
-          echo "image_version=v$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')" >> $GITHUB_ENV
-      
-      - name: Check tag name
-        run: |
-          TAG_NAME="${{ env.image_version }}"
-          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
-            exit 1
-          fi
 
       - name: Publish as GitHub Package
         uses: docker/build-push-action@v5
