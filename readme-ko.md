@@ -3,12 +3,14 @@
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
 
+[English](readme.md) / [한국어](readme-ko.md)
+
 🧑🏼‍🔧 이 리포지토리는 Ansible Docker 이미지를 빌드하기 위한 CI 파이프라인을 포함하고 있습니다. 또한 DevOps 사용을 위한 ghcr.io 리포지토리를 제공합니다. 지원되는 아키텍처는 `linux/amd64`, `linux/arm64`입니다.
 
 > [!IMPORTANT]
 > 이 리포지토리는 공식 Ansible 프로젝트와 관련이 없습니다. 이는 Ansible 사용자를 위한 Docker 이미지를 제공하는 커뮤니티 유지 프로젝트입니다. 공식 Ansible 프로젝트는 ['ansible-community/ansible-build-data' 리포지토리](https://github.com/ansible-community/ansible-build-data)에서 유지 관리됩니다. Ansible에 대한 자세한 정보는 https://ansible.readthedocs.io/projects/ansible-build-data 공식 웹사이트를 방문하세요.
 
-## 시작하기
+## Getting Started
 
 이 리포지토리의 소스 코드를 직접 사용하는 것은 권장하지 않습니다. 대신, ghcr.io 리포지토리에서 빌드된 Docker 이미지를 사용하시는 걸 추천합니다. 이미지는 `main` 브랜치가 갱신될 때마다 자동으로 빌드되어 ghcr.io 리포지토리에 푸시됩니다.
 

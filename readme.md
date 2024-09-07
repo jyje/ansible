@@ -3,6 +3,8 @@
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
 
+[English](readme.md) / [한국어](readme-ko.md)
+
 🧑🏼‍🔧 This repository contains the CI pipeline for building an Ansible Docker image. It also provides a repository on ghcr.io for your DevOps usage. Supported architectures are `linux/amd64`, `linux/arm64`.
 
 > [!IMPORTANT]
