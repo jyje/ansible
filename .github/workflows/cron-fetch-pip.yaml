@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-ansible-version:
-    name: 🔍 Check Ansible Version
+    name: 🔍 Check PyPI Version
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
