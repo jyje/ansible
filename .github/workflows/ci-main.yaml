@@ -46,8 +46,9 @@ jobs:
             exit 1
           fi
 
-      - name: Set tag and push in Github
+      - name: Check a tag from list
         run: |
+          TAG_NAME="${{ env.image_version }}"
           TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
             echo "Tag $TAG_NAME already exists."
