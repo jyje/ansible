@@ -1,4 +1,4 @@
-name: release
+name: ci-main
 
 on:
   push:
@@ -6,22 +6,31 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  init:
     runs-on: ubuntu-latest
-
+    outputs:
+      step_init: ${{ steps.check_flag.outputs.step_init }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Check for --no-ci flag in commit message
+        id: check_flag
+        run: |
+          echo "Checking commit message for --no-ci flag..."
+          if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
+            echo "step_init=false" >> $GITHUB_OUTPUT
+          else
+            echo "step_init=true" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+  build-and-release:
+    needs: init
+    if: ${{ needs.init.outputs.step_init == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Extract tag
         run: |
@@ -42,6 +51,16 @@ jobs:
             echo "Tag $TAG_NAME already exists."
             exit 1
           fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish as GitHub Package
         uses: docker/build-push-action@v5

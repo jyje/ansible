@@ -1,4 +1,4 @@
-name: ci-dev
+name: ci-develop
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   init:
     runs-on: ubuntu-latest
     outputs:
-      run_build: ${{ steps.check_flag.outputs.run_build }}
+      step_init: ${{ steps.check_flag.outputs.step_init }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,14 +19,14 @@ jobs:
         run: |
           echo "Checking commit message for --no-ci flag..."
           if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
-            echo "run_build=false" >> $GITHUB_OUTPUT
+            echo "step_init=false" >> $GITHUB_OUTPUT
           else
-            echo "run_build=true" >> $GITHUB_OUTPUT
+            echo "step_init=true" >> $GITHUB_OUTPUT
           fi
 
-  build:
+  build-for-testing:
     needs: init
-    if: ${{ needs.init.outputs.run_build == 'true' }}
+    if: ${{ needs.init.outputs.step_init == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
