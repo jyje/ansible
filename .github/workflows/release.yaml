@@ -52,3 +52,7 @@ jobs:
           tag: ${{ env.image_version }}
           name: Release ${{ env.image_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Status
+        if: success()
+        run: echo "RELEASED" >> $GITHUB_ENV
