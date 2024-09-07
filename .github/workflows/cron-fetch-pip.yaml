@@ -28,24 +28,29 @@ jobs:
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Check for existing PR
+        id: check_pr
         run: |
           PR_TITLE="[v${{ env.NEW_VERSION }}] update ansible version"
           if gh pr list --search "$PR_TITLE" --json title | jq -e '.[] | select(.title == "'$PR_TITLE'")'; then
-            echo "PR for version ${{ env.NEW_VERSION }} already exists. Exiting."
-            exit 0
-          fi
+            echo "PR_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "PR_EXISTS=false" >> $GITHUB_ENV
 
       - name: Fetch tags
+        if: env.PR_EXISTS == 'false'
         run: git fetch --unshallow --tags
 
       - name: Check for existing tag
+        id: check_tag
+        if: env.PR_EXISTS == 'false'
         run: |
           if git tag --list "v${{ env.NEW_VERSION }}"; then
-            echo "Tag v${{ env.NEW_VERSION }} already exists. Exiting."
-            exit 0
-          fi
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
 
       - name: Create new branch and update version
+        if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -56,6 +61,7 @@ jobs:
           git push origin version/${{ env.NEW_VERSION }}
 
       - name: Create PR
+        if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
         run: |
           gh pr create \
             --title "[v${{ env.NEW_VERSION }}] update ansible version" \
