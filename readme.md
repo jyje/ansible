@@ -3,6 +3,8 @@
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
 
+[English](readme.md) / [한국어](readme-ko.md)
+
 🧑🏼‍🔧 This repository contains the CI pipeline for building an Ansible Docker image. It also provides a repository on ghcr.io for your DevOps usage. Supported architectures are `linux/amd64`, `linux/arm64`.
 
 > [!IMPORTANT]
@@ -26,12 +28,19 @@ The CI pipeline in this repository is responsible for building the Ansible Docke
 
 To use the Ansible Docker image in your DevOps workflows, follow these steps:
 
-1. Pull the Docker image from the ghcr.io repository.
+1. (Optional) Pull the Docker image from the ghcr.io repository.
 
 ```bash
 docker pull ghcr.io/jyje/ansible
 ```
+
 2. Run the Docker container using the pulled image.
+
+```bash
+docker run --rm -it ghcr.io/jyje/ansible # or
+docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
+```
+
 3. Execute your Ansible playbooks and tasks inside the running container.
 
 ### Using Specific Version
@@ -48,8 +57,8 @@ The list of available versions can be found on the [ghcr.io repository](https://
 # Preinstalled Utilities
 This image provides following utilities preinstalled:
 ```
-- ansible
-- python
+- ansible >= 9.2.0
+- python == 3.12.x
 - pip
 
 - curl
