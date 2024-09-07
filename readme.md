@@ -26,12 +26,19 @@ The CI pipeline in this repository is responsible for building the Ansible Docke
 
 To use the Ansible Docker image in your DevOps workflows, follow these steps:
 
-1. Pull the Docker image from the ghcr.io repository.
+1. (Optional) Pull the Docker image from the ghcr.io repository.
 
 ```bash
 docker pull ghcr.io/jyje/ansible
 ```
+
 2. Run the Docker container using the pulled image.
+
+```bash
+docker run --rm -it ghcr.io/jyje/ansible # or
+docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
+```
+
 3. Execute your Ansible playbooks and tasks inside the running container.
 
 ### Using Specific Version
