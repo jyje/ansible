@@ -23,15 +23,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract tag name
+      - name: Extract tag
         run: |
           echo "image_version=v$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')" >> $GITHUB_ENV
       
-      - name: Check tag name
+      - name: Check tag
         run: |
+          # Check if the tag is in the correct format
           TAG_NAME="${{ env.image_version }}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
+            exit 1
+          fi
+
+          # Check if the tag already exists
+          TAG_EXISTS=$(git tag --list $TAG_NAME)
+          if [ -n "$TAG_EXISTS" ]; then
+            echo "Tag $TAG_NAME already exists."
             exit 1
           fi
 
