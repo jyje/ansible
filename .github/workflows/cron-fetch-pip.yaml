@@ -31,7 +31,8 @@ jobs:
         id: check_pr
         run: |
           PR_TITLE="[v${{ env.NEW_VERSION }}] update ansible version"
-          if gh pr list --search "$PR_TITLE" --json title | jq -e ".[] | select(.title == \"$PR_TITLE\")"; then
+          gh pr list --search "$PR_TITLE" --json title > pr_list.json
+          if jq -e ".[] | select(.title == \"$PR_TITLE\")" pr_list.json; then
             echo "PR_EXISTS=true" >> $GITHUB_ENV
           else
             echo "PR_EXISTS=false" >> $GITHUB_ENV
