@@ -26,6 +26,9 @@ jobs:
       - name: Extract tag name
         run: |
           echo "image_version=v$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')" >> $GITHUB_ENV
+      
+      - name: Check tag name
+        run: |
           TAG_NAME="${{ env.image_version }}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
