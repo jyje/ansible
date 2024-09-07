@@ -1,10 +1,11 @@
-# Ansible Docker Image
+# Unofficial Ansible Docker Image
 [![release](https://github.com/jyje/ansible/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/release.yaml)
 [![develop ci-dev.yaml](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-dev.yaml)
 
 🧑🏼‍🔧 This repository contains the CI pipeline for building an Ansible Docker image. It also provides a repository on ghcr.io for your DevOps usage. Supported architectures are `amd64`, `arm64`.
 
-⚠️ This repository is not affiliated with the official Ansible project. This is a community-maintained project that provides a Docker image for Ansible users. The official Ansible project is maintained in ['ansible-community/ansible-build-data' repository](https://github.com/ansible-community/ansible-build-data). For more information about Ansible, visit the official website at https://ansible.readthedocs.io/projects/ansible-build-data
+> [!IMPORTANT]
+> This repository is not affiliated with the official Ansible project. This is a community-maintained project that provides a Docker image for Ansible users. The official Ansible project is maintained in ['ansible-community/ansible-build-data' repository](https://github.com/ansible-community/ansible-build-data). For more information about Ansible, visit the official website at https://ansible.readthedocs.io/projects/ansible-build-data
 
 ## Getting Started
 
@@ -34,10 +35,10 @@ docker pull ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v9.5.1`, use the following command:
+You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v10.3.0`, use the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v9.5.1
+docker pull ghcr.io/jyje/ansible:v10.3.0
 ```
 
 

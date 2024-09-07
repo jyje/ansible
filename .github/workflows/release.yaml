@@ -2,8 +2,8 @@ name: release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 jobs:
   build-and-release:
@@ -44,6 +44,23 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ env.image_version }}
+
+      - name: Set tag and push in Github
+        run: |
+          # Set Git identity
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if the tag already exists
+          TAG_EXISTS=$(git tag --list ${{ env.image_version }})
+          if [ -n "$TAG_EXISTS" ]; then
+            echo "Tag ${{ env.image_version }} already exists."
+            exit 0
+          fi
+
+          # Create and push the new tag
+          git tag ${{ env.image_version }}
+          git push origin ${{ env.image_version }}
 
       - name: Create Release
         if: success()
