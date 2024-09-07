@@ -24,10 +24,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract tag name
-        run: echo "image_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Check tag format
         run: |
+          cat requirements.txt | grep -oP '==\K[0-9]+\.[0-9]+\.[0-9]+' > tag.txt
+          echo "image_version=v$(cat tag.txt)" >> $GITHUB_ENV
           TAG_NAME="${{ env.image_version }}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
