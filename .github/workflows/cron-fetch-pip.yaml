@@ -34,9 +34,8 @@ jobs:
         run: |
           PR_TITLE="[v${{ env.NEW_VERSION }}] update ansible version"
           gh pr list --search "$PR_TITLE" --json title > pr_list.json
-          if jq -e ".[] | select(.title == \"$PR_TITLE\")" pr_list.json; then
-            echo "PR_EXISTS=true" >> $GITHUB_ENV
-          else
+          jq -e ".[] | select(.title == \"$PR_TITLE\")" pr_list.json && \
+            echo "PR_EXISTS=true" >> $GITHUB_ENV || \
             echo "PR_EXISTS=false" >> $GITHUB_ENV
 
       - name: Fetch tags
