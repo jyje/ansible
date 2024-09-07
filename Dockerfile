@@ -19,4 +19,4 @@ COPY requirements.txt /requirements.txt
 RUN pip install --upgrade pip
 RUN pip install --upgrade --no-cache-dir -r /requirements.txt
 
-ENTRYPOINT [ "sh" ]
+ENTRYPOINT [ "sh", "-c" ]
