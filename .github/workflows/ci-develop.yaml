@@ -7,6 +7,7 @@ on:
 
 jobs:
   init:
+    name: 🧐 Inintialize
     runs-on: ubuntu-latest
     outputs:
       step_init: ${{ steps.check_flag.outputs.step_init }}
@@ -25,6 +26,7 @@ jobs:
           fi
 
   build-for-testing:
+    name: 🏗️ Build for testing
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
     runs-on: ubuntu-latest
@@ -45,7 +47,7 @@ jobs:
       - name: Extract short SHA
         run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
-      - name: Publish as GitHub Package
+      - name: Build/Publish as GitHub Package
         uses: docker/build-push-action@v5
         with:
           context: .
