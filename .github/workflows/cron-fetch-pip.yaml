@@ -3,6 +3,7 @@ name: cron-fetch-pip
 on:
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   check-ansible-version:
