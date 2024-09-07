@@ -46,7 +46,8 @@ jobs:
         id: check_tag
         if: env.PR_EXISTS == 'false'
         run: |
-          if git tag --list "v${{ env.NEW_VERSION }}"; then
+          git tag --list "v${{ env.NEW_VERSION }}" > tag_list.txt
+          if [ -s tag_list.txt ]; then
             echo "TAG_EXISTS=true" >> $GITHUB_ENV
           else
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
