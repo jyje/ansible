@@ -48,6 +48,7 @@ jobs:
 
       - name: Check a tag from list
         run: |
+          git fetch --unshallow --tags
           export TAG_NAME="${{ env.image_version }}"
           export TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
