@@ -40,7 +40,7 @@ jobs:
       
       - name: Check tag format
         run: |
-          TAG_NAME="${{ env.image_version }}"
+          export TAG_NAME="${{ env.image_version }}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
             exit 1
@@ -48,8 +48,8 @@ jobs:
 
       - name: Check a tag from list
         run: |
-          TAG_NAME="${{ env.image_version }}"
-          TAG_EXISTS=$(git tag --list $TAG_NAME)
+          export TAG_NAME="${{ env.image_version }}"
+          export TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
             echo "Tag $TAG_NAME already exists."
             exit 1
