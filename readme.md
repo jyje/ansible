@@ -1,6 +1,7 @@
 # Unofficial Ansible Docker Image
 [![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
+[![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
 
 🧑🏼‍🔧 This repository contains the CI pipeline for building an Ansible Docker image. It also provides a repository on ghcr.io for your DevOps usage. Supported architectures are `linux/amd64`, `linux/arm64`.
 
@@ -35,12 +36,13 @@ docker pull ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v10.3.0`, use the following command:
+You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v9.2.0`, use the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v10.3.0
+docker pull ghcr.io/jyje/ansible:v9.2.0
 ```
 
+The list of available versions can be found on the [ghcr.io repository](https://github.com/jyje/ansible/pkgs/container/ansible).
 
 
 # Preinstalled Utilities
