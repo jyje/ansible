@@ -55,7 +55,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b version/${{ env.NEW_VERSION }} origin/main
+          git checkout -b version/${{ env.NEW_VERSION }} main
           echo "ansible==${{ env.NEW_VERSION }}" > requirements.txt
           git add requirements.txt
           git commit -m "✨ version: for v${{ env.NEW_VERSION }}"
