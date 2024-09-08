@@ -58,7 +58,7 @@ jobs:
           git checkout -b version/${{ env.NEW_VERSION }} main
           echo "ansible==${{ env.NEW_VERSION }}" > requirements.txt
           git add requirements.txt
-          git commit -m "✨ version: for v${{ env.NEW_VERSION }}"
+          git commit -m "✨ version: for v${{ env.NEW_VERSION }}" --allow-empty
           git push origin version/${{ env.NEW_VERSION }}
 
       - name: Create PR
