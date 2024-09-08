@@ -64,6 +64,12 @@ jobs:
       - name: Create PR
         if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
         run: |
+          # check and wait for `version/${{ env.NEW_VERSION }}` branch to be created
+          while [ "$(git ls-remote --heads origin version/${{ env.NEW_VERSION }})" = "" ]; do
+            echo "Waiting for version/${{ env.NEW_VERSION }} branch to be created..."
+            sleep 5
+          done
+
           gh pr create \
             --title "[v${{ env.NEW_VERSION }}] update ansible version" \
             --body "Automatically created PR to update Ansible version to v${{ env.NEW_VERSION }}" \
