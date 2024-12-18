@@ -53,8 +53,6 @@ jobs:
             else
               echo "TAG_EXISTS=false" >> $GITHUB_ENV
             fi
-            # Dummy exit to make the job fail
-            exit 1
 
       - name: Create new branch and update version
         if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
