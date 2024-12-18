@@ -41,6 +41,8 @@ jobs:
       - name: Check for existing tag
         id: check_tag
         if: env.PR_EXISTS == 'false'
+        timeout-seconds: 15
+        max-attempts: 3
         run: |
           git fetch --unshallow --tags
           git tag --list "v${{ env.NEW_VERSION }}" > tag_list.txt
@@ -49,6 +51,8 @@ jobs:
           else
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
+          # Dummy exit to make the job fail
+          exit 1
 
       - name: Create new branch and update version
         if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
