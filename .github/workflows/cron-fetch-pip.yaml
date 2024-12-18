@@ -39,20 +39,22 @@ jobs:
             echo "PR_EXISTS=false" >> $GITHUB_ENV
 
       - name: Check for existing tag
+        uses: Wandalen/wretry.action@v3
         id: check_tag
         if: env.PR_EXISTS == 'false'
-        timeout-seconds: 15
-        max-attempts: 3
-        run: |
-          git fetch --unshallow --tags
-          git tag --list "v${{ env.NEW_VERSION }}" > tag_list.txt
-          if [ -s tag_list.txt ]; then
-            echo "TAG_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "TAG_EXISTS=false" >> $GITHUB_ENV
-          fi
-          # Dummy exit to make the job fail
-          exit 1
+        with:
+          attempt_limit: 3
+          attempt_delay: 10000
+          command: |
+            git fetch --unshallow --tags
+            git tag --list "v${{ env.NEW_VERSION }}" > tag_list.txt
+            if [ -s tag_list.txt ]; then
+              echo "TAG_EXISTS=true" >> $GITHUB_ENV
+            else
+              echo "TAG_EXISTS=false" >> $GITHUB_ENV
+            fi
+            # Dummy exit to make the job fail
+            exit 1
 
       - name: Create new branch and update version
         if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
