@@ -16,7 +16,7 @@ ENV ANSIBLE_CONFIG /etc/ansible/ansible.cfg
 COPY ansible.cfg ${ANSIBLE_CONFIG}
 COPY requirements.txt /requirements.txt
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade --no-cache-dir pip
 RUN pip install --upgrade --no-cache-dir -r /requirements.txt
 
 ENTRYPOINT [ "sh", "-c" ]
