@@ -61,7 +61,7 @@ jobs:
 
       - name: Setup testing containers
         run: |
-          docker-compose -f ./test/docker-compose.yaml up -d
+          docker compose -f ./test/docker-compose.yaml up -d
 
       - name: Say hello to containers using ansible image
         uses: addnab/docker-run-action@v3
