@@ -1,0 +1,11 @@
+name: ansible-test
+services:
+  member1: &member
+    image: ubuntu:24.04
+    command: tail -f /dev/null
+
+  member2:
+    <<: *member
+
+  member3:
+    <<: *member

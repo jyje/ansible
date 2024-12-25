@@ -25,8 +25,8 @@ jobs:
             echo "step_init=true" >> $GITHUB_OUTPUT
           fi
 
-  build-for-testing:
-    name: 🏗️ Build for testing
+  build-and-testing:
+    name: 🏗️ Build and testing
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
     runs-on: ubuntu-24.04
@@ -58,3 +58,16 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}-dev:latest
             ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+
+      - name: Setup testing containers
+        run: |
+          docker-compose -f ./test/docker-compose.yaml up -d
+
+      - name: Say hello to containers using ansible image
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+          options: -v ./test/hosts.yaml:/hosts.yaml
+          run: |
+            # ping all hosts
+            ansible -i /hosts.yaml all -m ping
