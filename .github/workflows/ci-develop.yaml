@@ -67,7 +67,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
-          options: -v ./test/hosts.yaml:/hosts.yaml
+          options: -v ${{ github.workspace }}/test/hosts.yaml:/hosts.yaml
           run: |
             # ping all hosts
             ansible -i /hosts.yaml all -m ping
