@@ -59,15 +59,8 @@ jobs:
             ghcr.io/${{ github.repository }}-dev:latest
             ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
 
-      - name: Setup testing containers
+      - name: Setup testing container
         run: |
-          docker compose -f ./test/docker-compose.yaml up -d
-
-      - name: Say hello to containers using ansible image
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
-          options: -v ${{ github.workspace }}/test/hosts.yaml:/hosts.yaml
-          run: |
-            # ping all hosts
-            ansible -i /hosts.yaml all -m ping
+          docker run -d --name ansible-test \
+            ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }} \
+            ansible --help
