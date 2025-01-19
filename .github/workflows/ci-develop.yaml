@@ -59,8 +59,6 @@ jobs:
             ghcr.io/${{ github.repository }}-dev:latest
             ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
 
-      - name: Setup testing container
+      - name: Test image
         run: |
-          docker run -d --name ansible-test \
-            ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }} \
-            ansible --help
+          docker run -it ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}

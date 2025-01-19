@@ -1,12 +1,11 @@
 #!/bin/bash
 
 echo "=================================================="
-echo "🎉 Welcome to the Community Ansible Image"
+echo "🎉 jyje/ansible: Community Ansible Image"
 echo ""
-echo "This is a community-maintained project that provides"
-echo "a Docker image for Ansible users."
-echo ""
-echo "The official Ansible project is maintained in"
+echo "Welcome to the Ansible community image! Official Ansible project does not provide"
+echo "a Docker image, so this is a community-maintained project that provides a lightweight"
+echo "Ansible image for Ansible users. The official Ansible project is maintained in"
 echo "'ansible-community/ansible-build-data' repository."
 echo ""
 echo "📚 For more information:"

@@ -62,7 +62,7 @@ The list of available versions can be found on the [ghcr.io repository](https://
 This image provides following utilities preinstalled:
 ```
 - ansible >= 9.2.0
-- python == 3.12.x
+- python == 3.12.8
 - pip
 
 - curl
