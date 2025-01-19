@@ -25,8 +25,8 @@ jobs:
             echo "step_init=true" >> $GITHUB_OUTPUT
           fi
 
-  build-and-release:
-    name: 🚀 Build and Release
+  build:
+    name: 🚀 Build
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
     runs-on: ubuntu-24.04-arm
@@ -99,8 +99,12 @@ jobs:
         run: |
           docker run -i ghcr.io/${{ github.repository }}:${{ env.image_version }}
 
+  release:
+    name: 🚀 Release
+    needs: build
+    runs-on: ubuntu-24.04-arm
+    steps:
       - name: Create Release
-        if: success()
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.image_version }}

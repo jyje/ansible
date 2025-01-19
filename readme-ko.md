@@ -23,15 +23,11 @@ docker pull ghcr.io/jyje/ansible
 
 ## CI Pipeline
 
-이 저장소의 CI 파이프라인은 Ansible Docker 이미지를 빌드하는 역할을 합니다.
-특정 요구 사항에 맞게 커스터마이징할 수 있습니다.
-파이프라인은 main 브랜치에 커밋될 때마다 트리거되며, 자동으로 Docker 이미지를 빌드하고 ghcr.io 레지스트리에 푸시합니다.
-
+이 저장소의 CI 파이프라인은 Ansible Docker 이미지를 빌드하는 역할을 합니다. 특정 요구 사항에 맞게 커스터마이징할 수 있습니다. 파이프라인은 main 브랜치에 커밋될 때마다 트리거되며, 자동으로 Docker 이미지를 빌드하고 ghcr.io 레지스트리에 푸시합니다.
 
 ## Usage
 
 DevOps 워크플로우에서 Ansible Docker 이미지를 사용하려면 다음 단계를 따라하시면 됩니다:
-
 
 1. (선택) 도커 이미지를 풀링하세요.
 
@@ -39,15 +35,17 @@ DevOps 워크플로우에서 Ansible Docker 이미지를 사용하려면 다음 
 docker pull ghcr.io/jyje/ansible
 ```
 
-2. 도커 명령어를 이용해 컨테이너를 실행하세요
+2. 도커 명령어를 이용해 컨테이너를 실행하세요.
 
 ```bash
-docker run --rm -it ghcr.io/jyje/ansible # 혹은
+docker run --rm -it ghcr.io/jyje/ansible ansible --help
+# 또는
+docker run --rm -it ghcr.io/jyje/ansible ansible-playbook --help
+# 또는
 docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 ```
 
 3. 컨테이너 내부에서 실행할 Ansible 플레이북과 작업을 실행하세요.
-
 
 ### Using Specific Version
 
@@ -59,13 +57,12 @@ docker pull ghcr.io/jyje/ansible:v9.2.0
 
 사용 가능한 버전 목록은 [ghcr.io 리포지토리](https://github.com/jyje/ansible/pkgs/container/ansible)에서 확인할 수 있습니다.
 
-
 # Preinstalled Utilities
 
 이미지에는 다음과 같은 유틸리티가 미리 설치되어 있습니다:
 ```
 - ansible >= 9.2.0
-- python == 3.12.x
+- python == 3.12.8
 - pip
 
 - curl
