@@ -18,7 +18,7 @@ I don't recommend using the source code in this repository directly. Instead, yo
 To use the Ansible Docker image in your DevOps workflows, pull the image from the ghcr.io repository using the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible
+docker pull ghcr.io/jyje/ansible ansible
 ```
 
 ## CI Pipeline
