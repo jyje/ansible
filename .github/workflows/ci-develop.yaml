@@ -8,7 +8,7 @@ on:
 jobs:
   init:
     name: 🧐 Inintialize
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     outputs:
       step_init: ${{ steps.check_flag.outputs.step_init }}
     steps:
@@ -29,7 +29,7 @@ jobs:
     name: 🏗️ Build and testing
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
