@@ -1,7 +1,7 @@
 FROM docker.io/library/python:3.12-slim
 
 LABEL org.opencontainers.image.source=https://github.com/jyje/ansible
-LABEL org.opencontainers.image.description="Ansible Image"
+LABEL org.opencontainers.image.description="Community-maintained Ansible Image"
 
 RUN apt-get update --fix-missing && \
     apt-get install -y --no-install-recommends \
