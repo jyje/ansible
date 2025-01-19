@@ -38,7 +38,10 @@ docker pull ghcr.io/jyje/ansible
 2. Run the Docker container using the pulled image.
 
 ```bash
-docker run --rm -it ghcr.io/jyje/ansible # or
+docker run --rm -it ghcr.io/jyje/ansible ansible --help
+# or
+docker run --rm -it ghcr.io/jyje/ansible ansible-playbook --help
+# or
 docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 ```
 
@@ -59,7 +62,7 @@ The list of available versions can be found on the [ghcr.io repository](https://
 This image provides following utilities preinstalled:
 ```
 - ansible >= 9.2.0
-- python == 3.12.x
+- python == 3.12.8
 - pip
 
 - curl
