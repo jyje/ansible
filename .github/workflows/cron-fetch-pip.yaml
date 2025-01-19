@@ -8,7 +8,7 @@ on:
 jobs:
   check-ansible-version:
     name: 🔍 Check PyPI Version
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
