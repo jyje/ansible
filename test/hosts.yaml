@@ -1,8 +1,0 @@
-all:
-  hosts:
-    member1:
-      ansible_host: ansible-test-member1
-    member2:
-      ansible_host: ansible-test-member2
-    member3:
-      ansible_host: ansible-test-member3

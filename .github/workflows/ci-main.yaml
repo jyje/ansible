@@ -26,7 +26,7 @@ jobs:
           fi
 
   build:
-    name: 🚀 Build
+    name: 🏗️ Build
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
     runs-on: ubuntu-24.04-arm
@@ -52,8 +52,8 @@ jobs:
           export TAG_NAME="${{ env.image_version }}"
           export TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
-            echo "Tag $TAG_NAME already exists."
-            exit 1
+            echo "Tag $TAG_NAME already exists. Workflow will exit successfully."
+            exit 0
           fi
 
       - name: Set up Docker Buildx

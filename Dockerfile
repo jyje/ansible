@@ -4,9 +4,8 @@ LABEL org.opencontainers.image.title="jyje/ansible"
 LABEL org.opencontainers.image.description="Community-maintained Ansible Image"
 LABEL org.opencontainers.image.source="https://github.com/jyje/ansible"
 LABEL org.opencontainers.image.documentation="https://ansible.readthedocs.io/projects/ansible-build-data"
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.licenses="Multiple Licenses (MIT, GPL, etc)"
 LABEL org.opencontainers.image.base.name="docker.io/library/python:3.12.8-slim"
-LABEL org.opencontainers.image.vendor="jyje"
 
 ENV ANSIBLE_CONFIG /etc/ansible/ansible.cfg
 COPY ansible.cfg ${ANSIBLE_CONFIG}
