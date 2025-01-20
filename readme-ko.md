@@ -1,4 +1,4 @@
-# Unofficial Ansible Docker Image
+# Ansible Docker Image (Community Edition)
 [![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
@@ -6,7 +6,7 @@
 
 [English](readme.md) / [한국어](readme-ko.md)
 
-🧑🏼‍🔧 이 리포지토리는 Ansible Docker 이미지를 빌드하기 위한 CI 파이프라인을 포함하고 있습니다. 또한 DevOps 사용을 위한 ghcr.io 리포지토리를 제공합니다. 지원되는 아키텍처는 `linux/amd64`, `linux/arm64`입니다.
+🧑🏼‍🔧 이 리포지토리는 커뮤니티 기반의 Ansible Docker 이미지를 제공합니다. 또한 Ansible Docker 이미지를 빌드하기 위한 CI 파이프라인을 포함하고 있습니다. 지원하는 아키텍처는 `linux/amd64`, `linux/arm64`입니다.
 
 > [!IMPORTANT]
 > 이 리포지토리는 공식 Ansible 프로젝트와 관련이 없습니다. 이는 Ansible 사용자를 위한 Docker 이미지를 제공하는 커뮤니티 유지 프로젝트입니다. 공식 Ansible 프로젝트는 ['ansible-community/ansible-build-data' 리포지토리](https://github.com/ansible-community/ansible-build-data)에서 유지 관리됩니다. Ansible에 대한 자세한 정보는 https://ansible.readthedocs.io/projects/ansible-build-data 공식 웹사이트를 방문하세요.
@@ -83,4 +83,4 @@ docker pull ghcr.io/jyje/ansible:v11.1.0
 
 ## 기여하기
 
-프로젝트 기여 방법에 대한 자세한 내용은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참고해주세요.
+프로젝트 기여 방법에 대한 내용은 [Contributing Guidelines](contributing.md)를 참고해주세요.

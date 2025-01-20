@@ -72,26 +72,26 @@ fix: Fix login validation
 ## Development Setup
 
 1. Clone the repository:
-```bash
-git clone https://github.com/YOUR_USERNAME/REPOSITORY_NAME.git
-cd REPOSITORY_NAME
-```
+    ```bash
+    git clone https://github.com/jyje/ansible.git jyje-ansible
+    cd jyje-ansible
+    ```
 
 2. Install required packages:
-```bash
-pip install -r requirements.txt
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-3. Make sure Docker is installed and running on your system
+3. Make sure Docker runtimeis installed and running on your system
 
 4. To test your changes locally:
-```bash
-# Build the image
-docker build -t ansible-test .
+    ```bash
+    # Build the image
+    docker build -t ansible-test .
 
-# Test the image
-docker run --rm ansible-test ansible --version
-```
+    # Test the image
+    docker run --rm ansible-test ansible --version
+    ```
 
 ## Code Style
 
@@ -104,15 +104,15 @@ docker run --rm ansible-test ansible --version
 
 - Add tests for new features
 - Run existing tests before submitting PR:
-```bash
-# Run tests locally
-./hello.sh
-```
+    ```bash
+    # Run tests locally
+    ./hello.sh
+    ```
 
 ## Documentation
 
 - Update documentation for new features or changes
-- Keep README.md and README-ko.md in sync
+- (Optional) Keep README.md and README-ko.md in sync
 - Use clear and concise language
 - Include code examples where appropriate
 
@@ -124,4 +124,4 @@ docker run --rm ansible-test ansible --version
 
 ## License
 
-By contributing to this project, you agree that your contributions will be licensed under the project's license. See [LICENSE.md](LICENSE.md) for details.
+By contributing to this project, you agree that your contributions will be licensed under the project's license. See [license.md](license.md) for details.
