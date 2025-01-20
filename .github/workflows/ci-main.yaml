@@ -10,7 +10,9 @@ jobs:
     name: 🧐 Inintialize
     runs-on: ubuntu-24.04-arm
     outputs:
-      step_init: ${{ steps.check_flag.outputs.step_init }}
+      skip_ci: ${{ steps.check_flag.outputs.skip_ci }}
+      image_version: ${{ steps.extract_tag.outputs.image_version }}
+      tag_exists: ${{ steps.check_tag.outputs.tag_exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,41 +22,38 @@ jobs:
         run: |
           echo "Checking commit message for --no-ci flag..."
           if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
-            echo "step_init=false" >> $GITHUB_OUTPUT
+            echo "skip_ci=true" >> $GITHUB_OUTPUT
           else
-            echo "step_init=true" >> $GITHUB_OUTPUT
+            echo "skip_ci=false" >> $GITHUB_OUTPUT
           fi
 
-  build:
-    name: 🏗️ Build
-    needs: init
-    if: ${{ needs.init.outputs.step_init == 'true' }}
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Extract tag
+      - name: Check release tag
         run: |
-          echo "image_version=v$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')" >> $GITHUB_ENV
+          VERSION=$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+          echo "image_version=v${VERSION}" >> $GITHUB_ENV
       
-      - name: Check tag format
-        run: |
-          export TAG_NAME="${{ env.image_version }}"
+          export TAG_NAME="v${VERSION}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Tag $TAG_NAME does not meet the required format 'vX.Y.Z'."
             exit 1
           fi
 
-      - name: Check a tag from list
-        run: |
           git fetch --unshallow --tags
-          export TAG_NAME="${{ env.image_version }}"
           export TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
-            echo "Tag $TAG_NAME already exists. Workflow will exit successfully."
-            exit 0
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
           fi
+
+  build:
+    name: 🏗️ Build
+    needs: init
+    if: ${{ needs.init.outputs.skip_ci == 'false' && needs.init.outputs.tag_exists == 'false' }}
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -76,7 +75,7 @@ jobs:
           provenance: false
           tags: |
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ env.image_version }}
+            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
 
       - name: Set tag and push in Github
         run: |
@@ -85,19 +84,19 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # Check if the tag already exists
-          TAG_EXISTS=$(git tag --list ${{ env.image_version }})
+          TAG_EXISTS=$(git tag --list ${{ needs.init.outputs.image_version }})
           if [ -n "$TAG_EXISTS" ]; then
-            echo "Tag ${{ env.image_version }} already exists."
-            exit 0
+            echo "Tag ${{ needs.init.outputs.image_version }} already exists."
+            exit 1
           fi
 
           # Create and push the new tag
-          git tag ${{ env.image_version }}
-          git push origin ${{ env.image_version }}
+          git tag ${{ needs.init.outputs.image_version }}
+          git push origin ${{ needs.init.outputs.image_version }}
 
       - name: Test image
         run: |
-          docker run -i ghcr.io/${{ github.repository }}:${{ env.image_version }}
+          docker run -i ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
 
   release:
     name: 🚀 Release
@@ -107,6 +106,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ env.image_version }}
-          name: Release ${{ env.image_version }}
+          tag: ${{ needs.init.outputs.image_version }}
+          name: Release ${{ needs.init.outputs.image_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
