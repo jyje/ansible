@@ -23,7 +23,15 @@ docker pull ghcr.io/jyje/ansible
 
 ## CI Pipeline
 
-이 저장소의 CI 파이프라인은 Ansible Docker 이미지를 빌드하는 역할을 합니다. 특정 요구 사항에 맞게 커스터마이징할 수 있습니다. 파이프라인은 main 브랜치에 커밋될 때마다 트리거되며, 자동으로 Docker 이미지를 빌드하고 ghcr.io 레지스트리에 푸시합니다.
+이 저장소는 자동화된 CI 파이프라인을 통해 Ansible Docker 이미지를 빌드하고 관리합니다. 파이프라인의 주요 특징은 다음과 같습니다:
+
+- **자동 빌드**: `main` 브랜치에 커밋이 발생하면 자동으로 Docker 이미지를 빌드합니다
+- **멀티 아키텍처 지원**: `linux/amd64`와 `linux/arm64` 아키텍처를 모두 지원합니다
+- **버전 관리**: 각 빌드는 자동으로 버전 태그가 지정되어 관리됩니다
+- **품질 관리**: 빌드된 이미지는 자동 테스트를 거쳐 안정성을 보장합니다
+- **자동 배포**: 성공적으로 빌드된 이미지는 자동으로 ghcr.io 레지스트리에 배포됩니다
+
+커밋 메시지에 `--no-ci` 플래그를 포함시키면 CI 파이프라인을 건너뛸 수 있습니다.
 
 ## Usage
 
@@ -49,10 +57,10 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 예를 들어 `v9.2.0` 버전을 사용하려면 다음 명령어를 입력하세요:
+특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 예를 들어 `v11.1.0` 버전을 사용하려면 다음 명령어를 입력하세요:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v9.2.0
+docker pull ghcr.io/jyje/ansible:v11.1.0
 ```
 
 사용 가능한 버전 목록은 [ghcr.io 리포지토리](https://github.com/jyje/ansible/pkgs/container/ansible)에서 확인할 수 있습니다.
@@ -72,3 +80,7 @@ docker pull ghcr.io/jyje/ansible:v9.2.0
 - vim
 - wget
 ```
+
+## 기여하기
+
+프로젝트 기여 방법에 대한 자세한 내용은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참고해주세요.

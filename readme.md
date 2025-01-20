@@ -23,7 +23,15 @@ docker pull ghcr.io/jyje/ansible ansible
 
 ## CI Pipeline
 
-The CI pipeline in this repository is responsible for building the Ansible Docker image. It can be customized to fit your specific requirements. The pipeline is triggered on every commit to the main branch and automatically builds and pushes the Docker image to the ghcr.io repository.
+This repository builds and manages Ansible Docker images through an automated CI pipeline. The pipeline has the following key features:
+
+- **Automated Build**: Docker images are automatically built when commits are made to the `main` branch
+- **Multi-architecture Support**: Supports both `linux/amd64` and `linux/arm64` architectures
+- **Version Control**: Each build is automatically versioned and tagged
+- **Quality Assurance**: Built images undergo automated testing to ensure stability
+- **Automated Deployment**: Successfully built images are automatically deployed to the ghcr.io registry
+
+You can skip the CI pipeline by including the `--no-ci` flag in your commit message.
 
 ## Usage
 
@@ -49,10 +57,10 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v9.2.0`, use the following command:
+You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v11.1.0`, use the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v9.2.0
+docker pull ghcr.io/jyje/ansible:v11.1.0
 ```
 
 The list of available versions can be found on the [ghcr.io repository](https://github.com/jyje/ansible/pkgs/container/ansible).
@@ -72,3 +80,7 @@ This image provides following utilities preinstalled:
 - vim
 - wget
 ```
+
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
