@@ -103,7 +103,7 @@ jobs:
 
   release:
     name: 🚀 Release
-    needs: build
+    needs: [ init, build ]
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Create Release
