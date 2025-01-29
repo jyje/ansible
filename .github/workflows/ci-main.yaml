@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     outputs:
       skip_ci: ${{ steps.check_flag.outputs.skip_ci }}
-      image_version: ${{ steps.extract_tag.outputs.image_version }}
+      image_version: ${{ steps.check_tag.outputs.image_version }}
       tag_exists: ${{ steps.check_tag.outputs.tag_exists }}
     steps:
       - name: Checkout code
@@ -22,15 +22,17 @@ jobs:
         run: |
           echo "Checking commit message for --no-ci flag..."
           if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
+            echo "Skipping CI"
             echo "skip_ci=true" >> $GITHUB_OUTPUT
           else
             echo "skip_ci=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check release tag
+        id: check_tag
         run: |
           VERSION=$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
-          echo "image_version=v${VERSION}" >> $GITHUB_ENV
+          echo "image_version=v${VERSION}" >> $GITHUB_OUTPUT
       
           export TAG_NAME="v${VERSION}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
@@ -41,6 +43,7 @@ jobs:
           git fetch --unshallow --tags
           export TAG_EXISTS=$(git tag --list $TAG_NAME)
           if [ -n "$TAG_EXISTS" ]; then
+            echo "Tag $TAG_NAME already exists."
             echo "tag_exists=true" >> $GITHUB_OUTPUT
           else
             echo "tag_exists=false" >> $GITHUB_OUTPUT
