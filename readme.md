@@ -1,4 +1,11 @@
 # Ansible Docker Image (Community Edition)
+<!-- center logo -->
+<div style="text-align: center;">
+  <img src="https://avatars.githubusercontent.com/u/1507452"
+       alt="Ansible Logo"
+       style="display: inline-block; height: 200px;">
+</div>
+
 [![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
 [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
 [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
@@ -6,7 +13,7 @@
 
 [English](readme.md) / [한국어](readme-ko.md)
 
-🧑🏼‍🔧 This repository provides Ansible Docker images powered by community. And it contains the CI pipeline for building an Ansible Docker image. Supported architectures are `linux/amd64`, `linux/arm64`.
+🧑🏼‍🔧 This repository provides [Ansible](https://github.com/ansible/ansible) Docker images powered by community. And it contains the CI pipeline for building an Ansible Docker image. Supported architectures are `linux/amd64`, `linux/arm64`.
 
 > [!IMPORTANT]
 > This repository is not affiliated with the official Ansible project. This is a community-maintained project that provides a Docker image for Ansible users. The official Ansible project is maintained in ['ansible-community/ansible-build-data' repository](https://github.com/ansible-community/ansible-build-data). For more information about Ansible, visit the official website at https://ansible.readthedocs.io/projects/ansible-build-data
