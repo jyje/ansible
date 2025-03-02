@@ -1,10 +1,20 @@
-# Ansible Docker Image (Community Edition)
-[![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
-[![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
-[![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/ansible)](https://github.com/jyje/ansible)
+<div align="center">
+  
+  # jyje/ansible
+  
+  <!-- center logo -->
+  <img width="250" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/ansible.png" alt="Ansible" title="Ansible"/>
+  
+  Ansible: Community-Powered Ansible Docker Image
 
-[English](readme.md) / [한국어](readme-ko.md)
+  [![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
+  [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
+  [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
+  [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/ansible)](https://github.com/jyje/ansible)
+
+  [English](readme.md) / [한국어](readme-ko.md)
+
+</div>
 
 🧑🏼‍🔧 이 리포지토리는 커뮤니티 기반의 Ansible Docker 이미지를 제공합니다. 또한 Ansible Docker 이미지를 빌드하기 위한 CI 파이프라인을 포함하고 있습니다. 지원하는 아키텍처는 `linux/amd64`, `linux/arm64`입니다.
 
