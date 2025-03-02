@@ -1,17 +1,20 @@
-# Ansible Docker Image (Community Edition)
-<!-- center logo -->
-<div style="text-align: center;">
-  <img src="https://avatars.githubusercontent.com/u/1507452"
-       alt="Ansible Logo"
-       style="display: inline-block; height: 200px;">
+<div align="center">
+  
+  # jyje/ansible
+  
+  <!-- center logo -->
+  <img width="250" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/ansible.png" alt="Ansible" title="Ansible"/>
+  
+  Ansible: Community-Powered Ansible Docker Image
+
+  [![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
+  [![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
+  [![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
+  [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/ansible)](https://github.com/jyje/ansible)
+
+  [English](readme.md) / [한국어](readme-ko.md)
+
 </div>
-
-[![release](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/jyje/ansible/actions/workflows/ci-main.yaml)
-[![test](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/ansible/actions/workflows/ci-develop.yaml)
-[![cron](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml/badge.svg)](https://github.com/jyje/ansible/actions/workflows/cron-fetch-pip.yaml)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/ansible)](https://github.com/jyje/ansible)
-
-[English](readme.md) / [한국어](readme-ko.md)
 
 🧑🏼‍🔧 This repository provides [Ansible](https://github.com/ansible/ansible) Docker images powered by community. And it contains the CI pipeline for building an Ansible Docker image. Supported architectures are `linux/amd64`, `linux/arm64`.
 
@@ -25,7 +28,7 @@ I don't recommend using the source code in this repository directly. Instead, yo
 To use the Ansible Docker image in your DevOps workflows, pull the image from the ghcr.io repository using the following command:
 
 ```bash
-docker pull ghcr.io/jyje/ansible ansible
+docker pull ghcr.io/jyje/ansible
 ```
 
 ## CI Pipeline
