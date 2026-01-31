@@ -61,6 +61,13 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}-dev:latest
             ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+          # Multi-arch annotations for ghcr.io package page
+          annotations: |
+            index:org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            index:org.opencontainers.image.description=Community-maintained Ansible Docker Image (Python 3.12) - Development Build
+            index:org.opencontainers.image.licenses=MIT
+            index:org.opencontainers.image.title=${{ github.repository }}-dev
+            index:org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
       - name: Test image
         run: |
