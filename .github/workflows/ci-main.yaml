@@ -6,11 +6,12 @@ on:
       - main
     paths:
       - .github/workflows/ci-main.yaml
+      - Dockerfile
       - requirements.txt
 
 jobs:
   init:
-    name: 🧐 Inintialize
+    name: 🧐 Initialize
     runs-on: ubuntu-24.04-arm
     outputs:
       skip_ci: ${{ steps.check_flag.outputs.skip_ci }}
@@ -90,19 +91,6 @@ jobs:
             index:org.opencontainers.image.title=${{ github.repository }}
             index:org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
-      - name: Check tag and push in Github
-        run: |
-          # Set Git identity
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Check if the tag already exists
-          TAG_EXISTS=$(git tag --list ${{ needs.init.outputs.image_version }})
-          if [ -n "$TAG_EXISTS" ]; then
-            echo "Tag ${{ needs.init.outputs.image_version }} already exists."
-            exit 1
-          fi
-
       - name: Test image
         run: |
           docker run -i ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
@@ -111,6 +99,8 @@ jobs:
     name: 🚀 Release
     needs: [ init, build ]
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
     steps:
       - name: Set version and push tag
         id: tag_version
@@ -126,4 +116,18 @@ jobs:
           tag: ${{ needs.init.outputs.image_version }}
           name: "Ansible ${{ needs.init.outputs.image_version }}"
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+          body: |
+            ## Ansible: Community Docker Image
+
+            This release contains Ansible version ${{ needs.init.outputs.image_version }}.
+
+            ### Usage
+
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
+            docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }} ansible --version
+            ```
+
+            ### Changelog
+
+            ${{ steps.tag_version.outputs.changelog }}

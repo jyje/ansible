@@ -72,4 +72,6 @@ jobs:
             --title "[v${{ env.NEW_VERSION }}] update ansible version" \
             --body "Automatically created PR to update Ansible version to v${{ env.NEW_VERSION }}" \
             --base main \
-            --head version/${{ env.NEW_VERSION }}
+            --head version/${{ env.NEW_VERSION }} \
+            --assignee "${{ github.repository_owner }}" \
+            --reviewer "${{ github.repository_owner }}"
