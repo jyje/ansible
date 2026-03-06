@@ -16,6 +16,8 @@ jobs:
     outputs:
       skip_ci: ${{ steps.check_flag.outputs.skip_ci }}
       image_version: ${{ steps.check_tag.outputs.image_version }}
+      image_major: ${{ steps.check_tag.outputs.image_major }}
+      image_minor: ${{ steps.check_tag.outputs.image_minor }}
       tag_exists: ${{ steps.check_tag.outputs.tag_exists }}
     steps:
       - name: Checkout code
@@ -37,6 +39,8 @@ jobs:
         run: |
           VERSION=$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
           echo "image_version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "image_major=v$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
+          echo "image_minor=v$(echo $VERSION | cut -d. -f1,2)" >> $GITHUB_OUTPUT
       
           export TAG_NAME="v${VERSION}"
           if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
@@ -83,6 +87,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
+            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}
+            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}
           # Multi-arch annotations for ghcr.io package page
           annotations: |
             index:org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -102,6 +108,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Set version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -109,6 +120,15 @@ jobs:
           tag_prefix: ""
           custom_tag: ${{ needs.init.outputs.image_version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update major and minor tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f ${{ needs.init.outputs.image_major }}
+          git tag -f ${{ needs.init.outputs.image_minor }}
+          git push -f origin refs/tags/${{ needs.init.outputs.image_major }}
+          git push -f origin refs/tags/${{ needs.init.outputs.image_minor }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1
