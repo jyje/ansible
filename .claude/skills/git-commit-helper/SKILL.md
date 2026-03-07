@@ -20,13 +20,10 @@ When the user requests a git commit or help with a commit message, follow these 
 <gitmoji> <type>(<domain>): <title>
 
 <description>
-
-Co-Authored-By: Cursor Agent <cursoragent@cursor.com>
 ```
 
 - **Title**: Concise, imperative mood, lowercase after the type.
 - **Description**: Optional, explain "why" or provide context.
-- **Co-Authored-By**: Always include `Co-Authored-By: Cursor Agent <cursoragent@cursor.com>`.
 
 ### Gitmoji & Type Mapping
 
@@ -51,11 +48,19 @@ Co-Authored-By: Cursor Agent <cursoragent@cursor.com>
 ## Workflow
 
 1. **Propose message**: Present the drafted message in a markdown code block.
-2. **Request confirmation**: Ask the user if they want to proceed with the commit.
+2. **Wait for confirmation**: Ask the user if they want to proceed with the commit. Do not proceed until explicit approval is given.
 3. **Commit & Push**:
    - Only execute `git commit` after explicit user approval.
    - After committing, ask if they want to push to the remote.
    - Only execute `git push` after receiving explicit user approval.
+
+<rules>
+**CRITICAL AI AGENT CONSTRAINTS:**
+1. **NEVER auto-commit**. You must only PROPOSE the commit message in a markdown block.
+2. **NEVER execute `git push` proactively**.
+3. When using the `run_command` tool to execute `git commit` or `git push` (ONLY AFTER USER APPROVAL), you **MUST** strictly set `SafeToAutoRun: false` to ensure user confirmation, or wait for the user to type the command themselves. Do not set `SafeToAutoRun: true` for these actions.
+4. Your role is primarily a "Drafter" for commit messages, not an autonomous "Executor."
+</rules>
 
 ## Additional Resources
 
