@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BASELINE_VERSION: '13.4.0'
       UPDATE_NEEDED: 'false'
       TARGET_VERSION: ''
       PR_EXISTS: 'false'
@@ -36,9 +37,9 @@ jobs:
         run: |
           git fetch --unshallow --tags
           git tag -l 'v*' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -u > tagged_versions.txt
-          # Only consider v11.1.0+ (current baseline as minimum)
-          (cat pip_versions.txt; echo "11.1.0") | sort -V | uniq | awk 'BEGIN{found=0} /^11\.1\.0$/{found=1} found{print}' | sort -u > n.txt
-          echo "Considering $(wc -l < n.txt) pip versions (>= 11.1.0)"
+          # Only consider version since the baseline as minimum
+          (cat pip_versions.txt; echo "$BASELINE_VERSION") | sort -V | uniq | awk -v base="$BASELINE_VERSION" 'BEGIN{found=0} $0 == base {found=1} found{print}' | sort -u > n.txt
+          echo "Considering $(wc -l < n.txt) pip versions (>= $BASELINE_VERSION)"
           sort -u tagged_versions.txt > t.txt
           comm -23 n.txt t.txt > missing_versions.txt
           TARGET_VERSION=$(sort -V missing_versions.txt | head -n 1)
@@ -114,5 +115,4 @@ jobs:
             --body "$PR_BODY" \
             --base main \
             --head version/${{ env.TARGET_VERSION }} \
-            --assignee "${{ github.repository_owner }}" \
-            --reviewer "${{ github.repository_owner }}"
+            --assignee "${{ github.repository_owner }}"

@@ -159,3 +159,27 @@ jobs:
             ### Changelog
 
             ${{ steps.tag_version.outputs.changelog }}
+
+  cleanup:
+    name: 🧹 Cleanup
+    needs: [ release ]
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Delete merged version branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          merged_branches=$(gh pr list --state merged --base main --limit 10 --json headRefName --jq '.[].headRefName' | grep '^version/' || true)
+          for branch in $merged_branches; do
+            echo "Checking remote branch: $branch"
+            if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+              echo "Branch $branch still exists remotely. Deleting..."
+              git push origin --delete "$branch" || echo "Failed to delete $branch"
+            fi
+          done
