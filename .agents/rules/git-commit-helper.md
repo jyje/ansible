@@ -20,7 +20,7 @@ All commit messages must strictly follow this format:
 - **Type**: Must be lowercase, chosen from the mapping below.
 - **Domain**: Must be enclosed in parentheses `()`. Identify the primary component or domain affected (e.g., `(nfs)`, `(open-webui)`). Use lowercase and kebab-case. 
 - **Title**: A concise summary of the change in imperative mood. Must start with a lowercase letter directly after the colon and space.
-- **Description**: (Optional) Use this to explain "why" the change was made or to provide further context.
+- **Description**: (Optional) Use this to explain "why" the change was made or provide further context.
 
 ---
 
@@ -48,17 +48,25 @@ Only use the following approved types and emojis:
 ---
 
 ## 3. Workflow Requirements
-1. **Analyze changes**: Always review staged and unstaged changes first to understand the scope and purpose of the work.
-2. **Propose message**: Present the drafted commit message to the user in a markdown code block.
-3. **Request confirmation**: **DO NOT** commit immediately. Ask the user if they want to proceed with the proposed commit message.
-4. **Commit & Push**:
-   - Only execute `git commit` after explicit user approval.
+1. **Analyze changes**: Review staged and unstaged changes to understand the scope and purpose of the work.
+2. **Review history**: Search the most recent 10 commits in the `git log` to help determine the appropriate `Type` and `Domain`. After identifying a potential `Domain`, search up to 10 recent commits specifically for that domain to ensure consistency and gain context for writing the commit message.
+3. **Propose message**: Present the drafted commit message to the user in a markdown code block.
+4. **Wait for confirmation**: Ask the user if they want to proceed with the proposed commit message. Do not proceed with committing or pushing until explicit approval is given.
+5. **Commit & Push**:
+   - Only execute `git commit` after explicit user approval. Do NOT auto-commit.
    - After committing, ask the user if they want to push to the remote repository.
-   - Only execute `git push` after receiving explicit user approval.
+   - Only execute `git push` after receiving explicit user approval. Do NOT auto-push.
 
 ---
 
-## 4. Examples
+## 4. Strict Constraints
+- **Agent Autonomy**: You MUST NOT arbitrarily execute commit or push commands before the user approves. All execution must wait for explicit user consent.
+- **Language**: The commit message and any detailed explanations of changes MUST be in English only. Do NOT use Korean.
+- **Privacy & Security**: NEVER include local paths, sensitive environment variables, or other local/sensitive information in the commit messages or detailed descriptions.
+
+---
+
+## 5. Examples
 
 ### Feature addition
 ```
@@ -120,9 +128,9 @@ Configure CORS settings to restrict allowed origins.
 Correct "gitmodi" to "gitmoji" in documentation.
 ```
 
-### Version update
+### Article (content/workload)
 ```
-⬆️ dep(claude): update claude version to latest
+📝 article(blog): add new post about kubernetes best practices
 
-Upgrade the underlying Claude model or software version to the newest release.
+Add a new blog post discussing kubernetes deployment strategies and best practices.
 ```
