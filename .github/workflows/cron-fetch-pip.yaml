@@ -2,7 +2,7 @@ name: cron-fetch-pip
 
 on:
   schedule:
-    - cron: '0 */12 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPDATE_NEEDED: 'false'
+      TARGET_VERSION: ''
+      PR_EXISTS: 'false'
+      HAS_OPEN_VERSION_PR: 'false'
+      TAG_EXISTS: 'false'
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -20,34 +25,59 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install pip-tools
-        run: pip install pip-tools
-
-      - name: Check for new Ansible version
-        id: check_version
+      - name: Fetch all PyPI versions
+        id: pip_versions
         run: |
-          NEW_VERSION=$(pip index versions ansible | grep -oP '(?<=Available versions: )\d+\.\d+\.\d+' | head -1)
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          curl -sL "https://pypi.org/pypi/ansible/json" | jq -r '.releases | keys[]' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' > pip_versions.txt
+          echo "Fetched $(wc -l < pip_versions.txt) versions from PyPI"
 
-      - name: Check for existing PR
+      - name: Find oldest missing version vs git tags
+        id: pick_oldest
+        run: |
+          git fetch --unshallow --tags
+          git tag -l 'v*' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -u > tagged_versions.txt
+          # Only consider v11.1.0+ (current baseline as minimum)
+          (cat pip_versions.txt; echo "11.1.0") | sort -V | uniq | awk 'BEGIN{found=0} /^11\.1\.0$/{found=1} found{print}' | sort -u > n.txt
+          echo "Considering $(wc -l < n.txt) pip versions (>= 11.1.0)"
+          sort -u tagged_versions.txt > t.txt
+          comm -23 n.txt t.txt > missing_versions.txt
+          TARGET_VERSION=$(sort -V missing_versions.txt | head -n 1)
+          if [ -z "$TARGET_VERSION" ]; then
+            echo "No missing versions; all pip versions have a tag."
+            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+          else
+            echo "Oldest missing version: $TARGET_VERSION"
+            echo "TARGET_VERSION=$TARGET_VERSION" >> $GITHUB_ENV
+            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+          fi
+
+      - name: Check for existing PR and open version PRs
+        if: env.UPDATE_NEEDED == 'true'
         id: check_pr
         run: |
-          PR_TITLE="[v${{ env.NEW_VERSION }}] update ansible version"
-          gh pr list --search "$PR_TITLE" --json title > pr_list.json
-          jq -e ".[] | select(.title == \"$PR_TITLE\")" pr_list.json && \
-            echo "PR_EXISTS=true" >> $GITHUB_ENV || \
-            echo "PR_EXISTS=false" >> $GITHUB_ENV
+          PR_TITLE="⬆️ dep(ansible): update ansible version to v${{ env.TARGET_VERSION }}"
+          gh pr list --state open --base main --json title > pr_list.json
+          # PR for this specific version already open?
+          jq -e ".[] | select(.title == \"$PR_TITLE\")" pr_list.json >/dev/null 2>&1 && \
+            echo "PR_EXISTS=true" >> $GITHUB_ENV || echo "PR_EXISTS=false" >> $GITHUB_ENV
+          # Any open version PR (avoid multiple open version PRs → merge conflicts when one is merged)
+          OPEN_COUNT=$(jq -r '.[].title' pr_list.json | grep -cE '^⬆️ dep\(ansible\): update ansible version to v[0-9]+\.[0-9]+\.[0-9]+$' || true)
+          if [ "${OPEN_COUNT:-0}" -ge 1 ]; then
+            echo "HAS_OPEN_VERSION_PR=true" >> $GITHUB_ENV
+          else
+            echo "HAS_OPEN_VERSION_PR=false" >> $GITHUB_ENV
+          fi
 
       - name: Check for existing tag
         uses: Wandalen/wretry.action@v3
         id: check_tag
-        if: env.PR_EXISTS == 'false'
+        if: env.UPDATE_NEEDED == 'true' && env.PR_EXISTS == 'false' && env.HAS_OPEN_VERSION_PR == 'false'
         with:
           attempt_limit: 3
           attempt_delay: 10000
           command: |
-            git fetch --unshallow --tags
-            git tag --list "v${{ env.NEW_VERSION }}" > tag_list.txt
+            git fetch --tags
+            git tag --list "v${{ env.TARGET_VERSION }}" > tag_list.txt
             if [ -s tag_list.txt ]; then
               echo "TAG_EXISTS=true" >> $GITHUB_ENV
             else
@@ -55,23 +85,34 @@ jobs:
             fi
 
       - name: Create new branch and update version
-        if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
+        if: env.UPDATE_NEEDED == 'true' && env.PR_EXISTS == 'false' && env.HAS_OPEN_VERSION_PR == 'false' && env.TAG_EXISTS == 'false'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b version/${{ env.NEW_VERSION }} main
-          echo "ansible==${{ env.NEW_VERSION }}" > requirements.txt
+          git checkout -b version/${{ env.TARGET_VERSION }} main
+          
+          # Update requirements.txt
+          echo "ansible==${{ env.TARGET_VERSION }}" > requirements.txt
+          
+          # Update Dockerfile ARG default value for reproducibility if it exists
+          if [ -f "Dockerfile" ]; then
+            sed -i "s/^ARG ANSIBLE_VERSION=.*/ARG ANSIBLE_VERSION=${{ env.TARGET_VERSION }}/" Dockerfile
+            git add Dockerfile
+          fi
+          
           git add requirements.txt
-          git commit -m "✨ version: for v${{ env.NEW_VERSION }}" --allow-empty
-          git push origin version/${{ env.NEW_VERSION }}
+          git commit -m "⬆️ dep(ansible): update ansible version to v${{ env.TARGET_VERSION }}" -m "Upgrade the underlying Ansible version to the newest release." --allow-empty
+          git push origin version/${{ env.TARGET_VERSION }}
 
       - name: Create PR
-        if: env.PR_EXISTS == 'false' && env.TAG_EXISTS == 'false'
+        if: env.UPDATE_NEEDED == 'true' && env.PR_EXISTS == 'false' && env.HAS_OPEN_VERSION_PR == 'false' && env.TAG_EXISTS == 'false'
         run: |
+          MISSING_CHECKLIST=$(sort -V missing_versions.txt | while IFS= read -r v; do echo "- [ ] v$v"; done)
+          PR_BODY=$(printf "Automatically created PR to update Ansible version to v%s\n\n### Upstream versions not yet built\n\n%s" "${{ env.TARGET_VERSION }}" "$MISSING_CHECKLIST")
           gh pr create \
-            --title "[v${{ env.NEW_VERSION }}] update ansible version" \
-            --body "Automatically created PR to update Ansible version to v${{ env.NEW_VERSION }}" \
+            --title "⬆️ dep(ansible): update ansible version to v${{ env.TARGET_VERSION }}" \
+            --body "$PR_BODY" \
             --base main \
-            --head version/${{ env.NEW_VERSION }} \
+            --head version/${{ env.TARGET_VERSION }} \
             --assignee "${{ github.repository_owner }}" \
             --reviewer "${{ github.repository_owner }}"
