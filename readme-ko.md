@@ -16,6 +16,8 @@
 
 </div>
 
+⭐ **If you found this project useful, please consider giving it a star on GitHub!**
+
 🧑🏼‍🔧 이 리포지토리는 커뮤니티 기반의 Ansible Docker 이미지를 제공합니다. 또한 Ansible Docker 이미지를 빌드하기 위한 CI 파이프라인을 포함하고 있습니다. 지원하는 아키텍처는 `linux/amd64`, `linux/arm64`입니다.
 
 > [!IMPORTANT]

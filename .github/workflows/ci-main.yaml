@@ -153,6 +153,9 @@ jobs:
             docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }} ansible --version
             ```
 
+            ---
+            ⭐ **If you found this project useful, please consider giving it a star on GitHub!**
+
             ### Changelog
 
             ${{ steps.tag_version.outputs.changelog }}
