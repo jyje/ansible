@@ -121,15 +121,6 @@ jobs:
           custom_tag: ${{ needs.init.outputs.image_version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update major and minor tags
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -f ${{ needs.init.outputs.image_major }}
-          git tag -f ${{ needs.init.outputs.image_minor }}
-          git push -f origin refs/tags/${{ needs.init.outputs.image_major }}
-          git push -f origin refs/tags/${{ needs.init.outputs.image_minor }}
-
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
