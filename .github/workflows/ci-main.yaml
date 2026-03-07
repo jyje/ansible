@@ -85,8 +85,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
+            ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}
             ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}
           # Multi-arch annotations for ghcr.io package page
