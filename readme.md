@@ -16,6 +16,8 @@
 
 </div>
 
+⭐ **If you found this project useful, please consider giving it a star on GitHub!**
+
 🧑🏼‍🔧 This repository provides [Ansible](https://github.com/ansible/ansible) Docker images powered by community. And it contains the CI pipeline for building an Ansible Docker image. Supported architectures are `linux/amd64`, `linux/arm64`.
 
 > [!IMPORTANT]
