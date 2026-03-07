@@ -69,10 +69,12 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 예를 들어 `v11.1.0` 버전을 사용하려면 다음 명령어를 입력하세요:
+특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 메이저, 마이너, 패치 버전과 일치하는 시맨틱 버저닝 태그를 지원합니다:
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v11.1.0
+docker pull ghcr.io/jyje/ansible:v13     # 메이저(Major) 버전
+docker pull ghcr.io/jyje/ansible:v13.4   # 마이너(Minor) 버전
+docker pull ghcr.io/jyje/ansible:v13.4.0 # 패치(Patch) 버전
 ```
 
 사용 가능한 버전 목록은 [ghcr.io 리포지토리](https://github.com/jyje/ansible/pkgs/container/ansible)에서 확인할 수 있습니다.

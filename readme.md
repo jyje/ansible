@@ -69,10 +69,12 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. For example, to use version `v11.1.0`, use the following command:
+You can use a specific version of the Ansible Docker image by specifying the version tag. We support semantic versioning tags (major, minor, and patch):
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v11.1.0
+docker pull ghcr.io/jyje/ansible:v13     # Major version
+docker pull ghcr.io/jyje/ansible:v13.4   # Minor version
+docker pull ghcr.io/jyje/ansible:v13.4.0 # Patch version
 ```
 
 The list of available versions can be found on the [ghcr.io repository](https://github.com/jyje/ansible/pkgs/container/ansible).
