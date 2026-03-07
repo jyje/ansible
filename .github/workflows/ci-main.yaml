@@ -141,6 +141,11 @@ jobs:
 
             This release contains Ansible version ${{ needs.init.outputs.image_version }}.
 
+            Available image tags for this release:
+            - `${{ needs.init.outputs.image_major }}`
+            - `${{ needs.init.outputs.image_minor }}`
+            - `${{ needs.init.outputs.image_version }}`
+
             ### Usage
 
             ```bash
