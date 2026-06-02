@@ -19,6 +19,7 @@ jobs:
       image_major: ${{ steps.check_tag.outputs.image_major }}
       image_minor: ${{ steps.check_tag.outputs.image_minor }}
       tag_exists: ${{ steps.check_tag.outputs.tag_exists }}
+      is_latest: ${{ steps.check_tag.outputs.is_latest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -57,6 +58,15 @@ jobs:
             echo "tag_exists=false" >> $GITHUB_OUTPUT
           fi
 
+          CURRENT_MAJOR=$(echo $VERSION | cut -d. -f1)
+          HIGHEST_MAJOR=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | cut -d. -f1 | sort -n | tail -1)
+          HIGHEST_MAJOR=${HIGHEST_MAJOR:-0}
+          if [ "$CURRENT_MAJOR" -ge "$HIGHEST_MAJOR" ]; then
+            echo "is_latest=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_latest=false" >> $GITHUB_OUTPUT
+          fi
+
   build:
     name: 🏗️ Build
     needs: init
@@ -76,6 +86,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute Docker tags
+        id: docker_tags
+        run: |
+          TAGS="ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}"
+          TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}"
+          TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}"
+          if [ "${{ needs.init.outputs.is_latest }}" == "true" ]; then
+            TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:latest"
+          fi
+          {
+            echo "tags<<EOF"
+            echo "$TAGS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
       - name: Build/Publish as GitHub Package
         uses: docker/build-push-action@v7
         with:
@@ -84,11 +109,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           provenance: false
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}
-            ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}
+          tags: ${{ steps.docker_tags.outputs.tags }}
           # Multi-arch annotations for ghcr.io package page
           annotations: |
             index:org.opencontainers.image.source=https://github.com/${{ github.repository }}

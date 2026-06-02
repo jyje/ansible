@@ -1,0 +1,98 @@
+name: ci-test-latest-policy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - .github/workflows/ci-main.yaml
+      - .github/scripts/test-latest-policy.sh
+
+jobs:
+  unit-test:
+    name: 🧪 Unit test (local logic)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run is_latest detection tests
+        run: |
+          chmod +x .github/scripts/test-latest-policy.sh
+          .github/scripts/test-latest-policy.sh
+
+  integration-test:
+    name: 🔬 Integration test (actual git tags)
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scenario: "new-major-v15"
+            version: "15.0.0"
+            seed_tags: "v14.0.0 v14.1.0 v13.5.0"
+            expected: "true"
+          - scenario: "old-major-v14-patch"
+            version: "14.2.0"
+            seed_tags: "v15.0.0 v14.0.0 v14.1.0"
+            expected: "false"
+          - scenario: "latest-major-minor-update"
+            version: "15.1.0"
+            seed_tags: "v15.0.0 v14.0.0"
+            expected: "true"
+          - scenario: "very-old-major-v13-patch"
+            version: "13.8.0"
+            seed_tags: "v15.0.0 v14.0.0 v13.7.0"
+            expected: "false"
+          - scenario: "first-ever-release"
+            version: "1.0.0"
+            seed_tags: ""
+            expected: "true"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Seed git tags for scenario
+        run: |
+          git config user.email "ci-test@local"
+          git config user.name "CI Test"
+          git config tag.gpgSign false
+          for tag in ${{ matrix.seed_tags }}; do
+            git tag "$tag"
+          done
+
+      - name: Run is_latest detection (same logic as ci-main.yaml)
+        id: check
+        run: |
+          VERSION="${{ matrix.version }}"
+          CURRENT_MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          HIGHEST_MAJOR=$(git tag --list 'v*' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sed 's/^v//' \
+            | cut -d. -f1 \
+            | sort -n \
+            | tail -1)
+          HIGHEST_MAJOR=${HIGHEST_MAJOR:-0}
+
+          if [ "$CURRENT_MAJOR" -ge "$HIGHEST_MAJOR" ]; then
+            echo "is_latest=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_latest=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Scenario : ${{ matrix.scenario }}"
+          echo "Version  : v$VERSION (major=$CURRENT_MAJOR)"
+          echo "Seed tags: ${{ matrix.seed_tags }}"
+          echo "Highest  : $HIGHEST_MAJOR"
+
+      - name: Verify result
+        run: |
+          RESULT="${{ steps.check.outputs.is_latest }}"
+          EXPECTED="${{ matrix.expected }}"
+          if [ "$RESULT" == "$EXPECTED" ]; then
+            echo "✅ PASS: is_latest=$RESULT (expected=$EXPECTED)"
+          else
+            echo "❌ FAIL: is_latest=$RESULT (expected=$EXPECTED)"
+            exit 1
+          fi
