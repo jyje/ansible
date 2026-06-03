@@ -69,12 +69,29 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-You can use a specific version of the Ansible Docker image by specifying the version tag. We support semantic versioning tags (major, minor, and patch):
+You can use a specific version of the Ansible Docker image by specifying the version tag. We support semantic versioning tags (major, minor, and patch).
+
+> [!TIP]
+> Using `latest` always pulls the most recent release, but pinning to a specific version is recommended for reproducible environments.
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v13     # Major version
-docker pull ghcr.io/jyje/ansible:v13.4   # Minor version
-docker pull ghcr.io/jyje/ansible:v13.4.0 # Patch version
+docker pull ghcr.io/jyje/ansible:latest  # Always the latest release
+```
+
+```bash
+# Latest major (v14) — recommended
+docker pull ghcr.io/jyje/ansible:v14     # Major version
+docker pull ghcr.io/jyje/ansible:v14.0   # Minor version
+docker pull ghcr.io/jyje/ansible:v14.0.0 # Patch version
+```
+
+If you need an older major version, you can still use it by specifying the version tag:
+
+```bash
+# Previous major (v13)
+docker pull ghcr.io/jyje/ansible:v13     # Latest v13
+docker pull ghcr.io/jyje/ansible:v13.7   # Latest v13.7
+docker pull ghcr.io/jyje/ansible:v13.7.0 # Specific patch
 ```
 
 The list of available versions can be found on the [ghcr.io repository](https://github.com/jyje/ansible/pkgs/container/ansible).
@@ -83,8 +100,8 @@ The list of available versions can be found on the [ghcr.io repository](https://
 # Preinstalled Utilities
 This image provides following utilities preinstalled:
 ```
-- ansible >= 9.2.0
-- python == 3.12.8
+- ansible >= 14.0.0
+- python == 3.12.13
 - pip
 
 - curl

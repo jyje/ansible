@@ -69,12 +69,29 @@ docker run --entrypoint sh --rm -it ghcr.io/jyje/ansible
 
 ### Using Specific Version
 
-특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 메이저, 마이너, 패치 버전과 일치하는 시맨틱 버저닝 태그를 지원합니다:
+특정 버전의 Ansible Docker 이미지를 사용하려면 버전 태그를 지정하세요. 메이저, 마이너, 패치 버전과 일치하는 시맨틱 버저닝 태그를 지원합니다.
+
+> [!TIP]
+> `latest` 태그는 항상 최신 릴리즈를 가리키지만, 재현 가능한 환경을 위해 특정 버전을 명시하는 것을 권장합니다.
 
 ```bash
-docker pull ghcr.io/jyje/ansible:v13     # 메이저(Major) 버전
-docker pull ghcr.io/jyje/ansible:v13.4   # 마이너(Minor) 버전
-docker pull ghcr.io/jyje/ansible:v13.4.0 # 패치(Patch) 버전
+docker pull ghcr.io/jyje/ansible:latest  # 항상 최신 릴리즈
+```
+
+```bash
+# 최신 메이저 버전 (v14) — 권장
+docker pull ghcr.io/jyje/ansible:v14     # 메이저(Major) 버전
+docker pull ghcr.io/jyje/ansible:v14.0   # 마이너(Minor) 버전
+docker pull ghcr.io/jyje/ansible:v14.0.0 # 패치(Patch) 버전
+```
+
+이전 메이저 버전이 필요한 경우에도 버전 태그를 지정하여 사용할 수 있습니다:
+
+```bash
+# 이전 메이저 버전 (v13)
+docker pull ghcr.io/jyje/ansible:v13     # v13 최신
+docker pull ghcr.io/jyje/ansible:v13.7   # v13.7 최신
+docker pull ghcr.io/jyje/ansible:v13.7.0 # 특정 패치 버전
 ```
 
 사용 가능한 버전 목록은 [ghcr.io 리포지토리](https://github.com/jyje/ansible/pkgs/container/ansible)에서 확인할 수 있습니다.
@@ -83,8 +100,8 @@ docker pull ghcr.io/jyje/ansible:v13.4.0 # 패치(Patch) 버전
 
 이미지에는 다음과 같은 유틸리티가 미리 설치되어 있습니다:
 ```
-- ansible >= 9.2.0
-- python == 3.12.8
+- ansible >= 14.0.0
+- python == 3.12.13
 - pip
 
 - curl
