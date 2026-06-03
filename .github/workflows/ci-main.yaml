@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     outputs:
       skip_ci: ${{ steps.check_flag.outputs.skip_ci }}
-      image_version: ${{ steps.check_tag.outputs.image_version }}
+      image_full_version: ${{ steps.check_tag.outputs.image_full_version }}
       image_major: ${{ steps.check_tag.outputs.image_major }}
       image_minor: ${{ steps.check_tag.outputs.image_minor }}
       tag_exists: ${{ steps.check_tag.outputs.tag_exists }}
@@ -39,7 +39,7 @@ jobs:
         id: check_tag
         run: |
           VERSION=$(cat requirements.txt | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
-          echo "image_version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "image_full_version=v${VERSION}" >> $GITHUB_OUTPUT
           echo "image_major=v$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
           echo "image_minor=v$(echo $VERSION | cut -d. -f1,2)" >> $GITHUB_OUTPUT
       
@@ -89,11 +89,11 @@ jobs:
         run: |
           {
             echo "tags<<EOF"
-            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}"
             [ "${{ needs.init.outputs.is_latest }}" == "true" ] && \
               echo "ghcr.io/${{ github.repository }}:latest"
-            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}"
+            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}"
             echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}"
+            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
@@ -116,7 +116,7 @@ jobs:
 
       - name: Test image
         run: |
-          docker run -i ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
+          docker run -i ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}
 
   release:
     name: 🚀 Release
@@ -135,30 +135,32 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.2
         with:
           tag_prefix: ""
-          custom_tag: ${{ needs.init.outputs.image_version }}
+          custom_tag: ${{ needs.init.outputs.image_full_version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ needs.init.outputs.image_version }}
-          name: "Ansible ${{ needs.init.outputs.image_version }}"
+          tag: ${{ needs.init.outputs.image_full_version }}
+          name: "Ansible ${{ needs.init.outputs.image_full_version }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             ## Ansible: Community Docker Image
 
-            This release contains Ansible version ${{ needs.init.outputs.image_version }}.
+            This release contains Ansible version ${{ needs.init.outputs.image_full_version }}.
 
             Available image tags for this release:
-            - `${{ needs.init.outputs.image_major }}`
+            - `${{ needs.init.outputs.image_full_version }}`
             - `${{ needs.init.outputs.image_minor }}`
-            - `${{ needs.init.outputs.image_version }}`
+            - `${{ needs.init.outputs.image_major }}`
+
+            > **Tip**: The `${{ needs.init.outputs.image_minor }}` and `${{ needs.init.outputs.image_major }}` tags will be updated by future releases in the same version line. For reproducible environments, pinning to the full version tag `${{ needs.init.outputs.image_full_version }}` is recommended.
 
             ### Usage
 
             ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}
-            docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }} ansible --version
+            docker pull ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}
+            docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }} ansible --version
             ```
 
             ---
