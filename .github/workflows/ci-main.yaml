@@ -87,15 +87,13 @@ jobs:
       - name: Compute Docker tags
         id: docker_tags
         run: |
-          TAGS="ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}"
-          TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}"
-          TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}"
-          if [ "${{ needs.init.outputs.is_latest }}" == "true" ]; then
-            TAGS="$TAGS"$'\n'"ghcr.io/${{ github.repository }}:latest"
-          fi
           {
             echo "tags<<EOF"
-            echo "$TAGS"
+            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_version }}"
+            [ "${{ needs.init.outputs.is_latest }}" == "true" ] && \
+              echo "ghcr.io/${{ github.repository }}:latest"
+            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_major }}"
+            echo "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_minor }}"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
