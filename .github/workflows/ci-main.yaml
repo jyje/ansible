@@ -138,37 +138,57 @@ jobs:
           custom_tag: ${{ needs.init.outputs.image_full_version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate Release Body
+        id: release_body
+        run: |
+          BODY_FILE="release_body.md"
+          cat <<EOF > $BODY_FILE
+          ## Ansible: Community Docker Image
+
+          This release contains Ansible version ${{ needs.init.outputs.image_full_version }}.
+
+          Available image tags for this release:
+          - \`${{ needs.init.outputs.image_full_version }}\`
+          EOF
+
+          if [ "${{ needs.init.outputs.is_latest }}" = "true" ]; then
+            cat <<EOF >> $BODY_FILE
+          - \`${{ needs.init.outputs.image_minor }}\`
+          - \`${{ needs.init.outputs.image_major }}\`
+
+          > **Tip**: The \`${{ needs.init.outputs.image_minor }}\` and \`${{ needs.init.outputs.image_major }}\` tags will be updated by future releases in the same version line. For reproducible environments, pinning to the full version tag \`${{ needs.init.outputs.image_full_version }}\` is recommended.
+          EOF
+          else
+            cat <<EOF >> $BODY_FILE
+
+          > **Note**: This is a patch release for an older version. The \`${{ needs.init.outputs.image_major }}\` and \`${{ needs.init.outputs.image_minor }}\` tags were not assigned to this image to prevent overriding newer versions.
+          EOF
+          fi
+
+          cat <<EOF >> $BODY_FILE
+
+          ### Usage
+
+          \`\`\`bash
+          docker pull ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}
+          docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }} ansible --version
+          \`\`\`
+
+          ---
+          ⭐ **If you found this project useful, please consider giving it a star on GitHub!**
+
+          ### Changelog
+
+          ${{ steps.tag_version.outputs.changelog }}
+          EOF
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ needs.init.outputs.image_full_version }}
           name: "Ansible ${{ needs.init.outputs.image_full_version }}"
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            ## Ansible: Community Docker Image
-
-            This release contains Ansible version ${{ needs.init.outputs.image_full_version }}.
-
-            Available image tags for this release:
-            - `${{ needs.init.outputs.image_full_version }}`
-            - `${{ needs.init.outputs.image_minor }}`
-            - `${{ needs.init.outputs.image_major }}`
-
-            > **Tip**: The `${{ needs.init.outputs.image_minor }}` and `${{ needs.init.outputs.image_major }}` tags will be updated by future releases in the same version line. For reproducible environments, pinning to the full version tag `${{ needs.init.outputs.image_full_version }}` is recommended.
-
-            ### Usage
-
-            ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}
-            docker run --rm -it ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }} ansible --version
-            ```
-
-            ---
-            ⭐ **If you found this project useful, please consider giving it a star on GitHub!**
-
-            ### Changelog
-
-            ${{ steps.tag_version.outputs.changelog }}
+          bodyFile: "release_body.md"
 
   cleanup:
     name: 🧹 Cleanup
