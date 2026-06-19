@@ -16,7 +16,7 @@ jobs:
       step_init: ${{ steps.check_flag.outputs.step_init }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check for --no-ci flag in commit message
         id: check_flag
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-26.04-arm
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
