@@ -113,6 +113,7 @@ jobs:
             index:org.opencontainers.image.licenses=MIT
             index:org.opencontainers.image.title=${{ github.repository }}
             index:org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            index:org.opencontainers.image.version=${{ needs.init.outputs.image_full_version }}
 
       - name: Test image
         run: |
