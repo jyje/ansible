@@ -6,6 +6,7 @@ on:
       - develop
     paths:
       - .github/workflows/ci-develop.yaml
+      - Dockerfile
       - requirements.txt
 
 jobs:
@@ -72,3 +73,16 @@ jobs:
       - name: Test image
         run: |
           docker run -i ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+
+      - name: Verify manifest contains both architectures
+        run: |
+          RAW=$(docker buildx imagetools inspect "ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}" --raw)
+          for plat in linux/amd64 linux/arm64; do
+            found=$(echo "$RAW" | jq -e --arg plat "$plat" \
+              '[.manifests[]? | select((.platform.os + "/" + .platform.architecture) == $plat)] | length > 0')
+            if [ "$found" != "true" ]; then
+              echo "❌ Missing platform $plat in published manifest"
+              exit 1
+            fi
+            echo "✅ Found platform $plat in published manifest"
+          done
