@@ -127,6 +127,9 @@ jobs:
     needs: [ init, build ]
     runs-on: ubuntu-26.04-arm
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
@@ -181,17 +184,9 @@ jobs:
             "${source_args[@]}"
 
       - name: Verify manifest contains both architectures
-        run: |
-          RAW=$(docker buildx imagetools inspect "ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}" --raw)
-          for plat in linux/amd64 linux/arm64; do
-            found=$(echo "$RAW" | jq -e --arg plat "$plat" \
-              '[.manifests[]? | select((.platform.os + "/" + .platform.architecture) == $plat)] | length > 0')
-            if [ "$found" != "true" ]; then
-              echo "❌ Missing platform $plat in published manifest"
-              exit 1
-            fi
-            echo "✅ Found platform $plat in published manifest"
-          done
+        uses: ./.github/actions/verify-multiarch-manifest
+        with:
+          image: ghcr.io/${{ github.repository }}:${{ needs.init.outputs.image_full_version }}
 
   release:
     name: 🚀 Release
