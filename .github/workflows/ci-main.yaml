@@ -175,12 +175,12 @@ jobs:
 
           docker buildx imagetools create \
             "${tag_args[@]}" \
-            --annotation "index:org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --annotation "index:org.opencontainers.image.description=Community-maintained Ansible Docker Image (Python 3.12)" \
-            --annotation "index:org.opencontainers.image.licenses=MIT" \
-            --annotation "index:org.opencontainers.image.title=${{ github.repository }}" \
-            --annotation "index:org.opencontainers.image.url=https://github.com/${{ github.repository }}" \
-            --annotation "index:org.opencontainers.image.version=${{ needs.init.outputs.image_full_version }}" \
+            --annotation index:org.opencontainers.image.source="https://github.com/${{ github.repository }}" \
+            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python 3.12)" \
+            --annotation index:org.opencontainers.image.licenses="MIT" \
+            --annotation index:org.opencontainers.image.title="${{ github.repository }}" \
+            --annotation index:org.opencontainers.image.url="https://github.com/${{ github.repository }}" \
+            --annotation index:org.opencontainers.image.version="${{ needs.init.outputs.image_full_version }}" \
             "${source_args[@]}"
 
       - name: Verify manifest contains both architectures
