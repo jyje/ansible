@@ -121,6 +121,10 @@ jobs:
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
+          # Re-running a single failed matrix leg re-uploads the same
+          # artifact name into the same run; without this the upload
+          # conflicts with the artifact left by the earlier attempt.
+          overwrite: true
 
   finalize:
     name: 🧬 Finalize manifest
