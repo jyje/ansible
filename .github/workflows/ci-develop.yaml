@@ -6,6 +6,7 @@ on:
       - develop
     paths:
       - .github/workflows/ci-develop.yaml
+      - Dockerfile
       - requirements.txt
 
 jobs:
@@ -14,6 +15,7 @@ jobs:
     runs-on: ubuntu-26.04-arm
     outputs:
       step_init: ${{ steps.check_flag.outputs.step_init }}
+      short_sha: ${{ steps.short_sha.outputs.short_sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -28,11 +30,25 @@ jobs:
             echo "step_init=true" >> $GITHUB_OUTPUT
           fi
 
-  build-and-testing:
-    name: 🏗️ Build and testing
+      - name: Extract short SHA
+        id: short_sha
+        run: echo "short_sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+  build:
+    name: 🏗️ Build (${{ matrix.arch }})
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
-    runs-on: ubuntu-26.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-26.04
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-26.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -47,28 +63,82 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract short SHA
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
-
-      - name: Build/Publish as GitHub Package
+      - name: Build/Publish image by digest (native ${{ matrix.arch }})
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
+          platforms: ${{ matrix.platform }}
           provenance: false
-          tags: |
-            ghcr.io/${{ github.repository }}-dev:latest
-            ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
-          # Multi-arch annotations for ghcr.io package page
-          annotations: |
-            index:org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            index:org.opencontainers.image.description=Community-maintained Ansible Docker Image (Python 3.12) - Development Build
-            index:org.opencontainers.image.licenses=MIT
-            index:org.opencontainers.image.title=${{ github.repository }}-dev
-            index:org.opencontainers.image.url=https://github.com/${{ github.repository }}
+          outputs: type=image,name=ghcr.io/${{ github.repository }}-dev,push-by-digest=true,name-canonical=true,push=true
 
-      - name: Test image
+      - name: Smoke test (native ${{ matrix.arch }})
         run: |
-          docker run -i ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+          docker run -i "ghcr.io/${{ github.repository }}-dev@${{ steps.build.outputs.digest }}"
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+          # Re-running a single failed matrix leg re-uploads the same
+          # artifact name into the same run; without this the upload
+          # conflicts with the artifact left by the earlier attempt.
+          overwrite: true
+
+  finalize:
+    name: 🧬 Finalize manifest
+    needs: [ init, build ]
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push dev manifest
+        working-directory: /tmp/digests
+        run: |
+          source_args=()
+          for digest in *; do
+            source_args+=("ghcr.io/${{ github.repository }}-dev@sha256:${digest}")
+          done
+
+          docker buildx imagetools create \
+            -t "ghcr.io/${{ github.repository }}-dev:latest" \
+            -t "ghcr.io/${{ github.repository }}-dev:${{ needs.init.outputs.short_sha }}" \
+            --annotation index:org.opencontainers.image.source="https://github.com/${{ github.repository }}" \
+            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python 3.12) - Development Build" \
+            --annotation index:org.opencontainers.image.licenses="MIT" \
+            --annotation index:org.opencontainers.image.title="${{ github.repository }}-dev" \
+            --annotation index:org.opencontainers.image.url="https://github.com/${{ github.repository }}" \
+            "${source_args[@]}"
+
+      - name: Verify manifest contains both architectures
+        uses: ./.github/actions/verify-multiarch-manifest
+        with:
+          image: ghcr.io/${{ github.repository }}-dev:${{ needs.init.outputs.short_sha }}
