@@ -1,0 +1,28 @@
+name: Verify multi-arch manifest
+description: Fail the job if a published OCI image manifest is missing any expected platform.
+
+inputs:
+  image:
+    description: Fully-qualified image reference to inspect (e.g. ghcr.io/org/repo:tag).
+    required: true
+  platforms:
+    description: Space-separated list of required platforms (e.g. "linux/amd64 linux/arm64").
+    required: false
+    default: "linux/amd64 linux/arm64"
+
+runs:
+  using: composite
+  steps:
+    - name: Verify manifest contains all required platforms
+      shell: bash
+      run: |
+        RAW=$(docker buildx imagetools inspect "${{ inputs.image }}" --raw)
+        for plat in ${{ inputs.platforms }}; do
+          found=$(echo "$RAW" | jq -e --arg plat "$plat" \
+            '[.manifests[]? | select((.platform.os + "/" + .platform.architecture) == $plat)] | length > 0')
+          if [ "$found" != "true" ]; then
+            echo "❌ Missing platform $plat in published manifest"
+            exit 1
+          fi
+          echo "✅ Found platform $plat in published manifest"
+        done
