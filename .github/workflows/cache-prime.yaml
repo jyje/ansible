@@ -1,0 +1,55 @@
+name: cache-prime
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prime:
+    name: 🧱 Prime native cache (${{ matrix.arch }})
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-26.04
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-26.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and cache native image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: false
+          load: true
+          tags: ansible-cache-prime:${{ matrix.arch }}
+          cache-from: type=gha,scope=ansible-main-${{ matrix.arch }}
+          cache-to: type=gha,scope=ansible-main-${{ matrix.arch }},mode=max
+
+      - name: Verify installed Ansible version
+        env:
+          IMAGE: ansible-cache-prime:${{ matrix.arch }}
+        run: |
+          expected="$(sed -n 's/^ansible==//p' requirements.txt)"
+          if [[ ! "$expected" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo 'Expected exactly one pinned ansible==X.Y.Z requirement' >&2
+            exit 1
+          fi
+          docker run --rm --entrypoint python "$IMAGE" \
+            -c 'import importlib.metadata, sys; actual = importlib.metadata.version("ansible"); expected = sys.argv[1]; print(f"ansible {actual} (expected {expected})"); sys.exit(actual != expected)' \
+            "$expected"
