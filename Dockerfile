@@ -1,4 +1,4 @@
-FROM docker.io/library/python:3.12.15-slim
+FROM docker.io/library/python:3.15.0-slim
 
 LABEL org.opencontainers.image.title="jyje/ansible"
 LABEL org.opencontainers.image.description="Community-maintained Ansible Image"
