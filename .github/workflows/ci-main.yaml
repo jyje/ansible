@@ -166,6 +166,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Detect Python version
+        id: python
+        run: |
+          minor=$(sed -n 's|^FROM docker.io/library/python:\([0-9]*\.[0-9]*\)\..*|\1|p' Dockerfile)
+          [ -n "$minor" ] || { echo "Failed to detect Python version from Dockerfile"; exit 1; }
+          echo "minor=${minor}" >> $GITHUB_OUTPUT
+
       - name: Compute Docker tags
         id: docker_tags
         run: |
@@ -195,7 +202,7 @@ jobs:
           docker buildx imagetools create \
             "${tag_args[@]}" \
             --annotation index:org.opencontainers.image.source="https://github.com/${{ github.repository }}" \
-            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python 3.12)" \
+            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python ${{ steps.python.outputs.minor }})" \
             --annotation index:org.opencontainers.image.licenses="MIT" \
             --annotation index:org.opencontainers.image.title="${{ github.repository }}" \
             --annotation index:org.opencontainers.image.url="https://github.com/${{ github.repository }}" \
