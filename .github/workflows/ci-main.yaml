@@ -102,11 +102,26 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ matrix.platform }}
           provenance: false
+          cache-from: type=gha,scope=ansible-main-${{ matrix.arch }}
+          cache-to: type=gha,scope=ansible-main-${{ matrix.arch }},mode=max
           outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Smoke test (native ${{ matrix.arch }})
         run: |
           docker run -i "ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}"
+
+      - name: Verify installed Ansible version
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+        run: |
+          expected="$(sed -n 's/^ansible==//p' requirements.txt)"
+          if [[ ! "$expected" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo 'Expected exactly one pinned ansible==X.Y.Z requirement' >&2
+            exit 1
+          fi
+          docker run --rm --entrypoint python "$IMAGE" \
+            -c 'import importlib.metadata, sys; actual = importlib.metadata.version("ansible"); expected = sys.argv[1]; print(f"ansible {actual} (expected {expected})"); sys.exit(actual != expected)' \
+            "$expected"
 
       - name: Export digest
         run: |
@@ -151,6 +166,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Detect Python version
+        id: python
+        run: |
+          minor=$(sed -n 's|^FROM docker.io/library/python:\([0-9]*\.[0-9]*\)\..*|\1|p' Dockerfile)
+          [ -n "$minor" ] || { echo "Failed to detect Python version from Dockerfile"; exit 1; }
+          echo "minor=${minor}" >> $GITHUB_OUTPUT
+
       - name: Compute Docker tags
         id: docker_tags
         run: |
@@ -180,7 +202,7 @@ jobs:
           docker buildx imagetools create \
             "${tag_args[@]}" \
             --annotation index:org.opencontainers.image.source="https://github.com/${{ github.repository }}" \
-            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python 3.12)" \
+            --annotation index:org.opencontainers.image.description="Community-maintained Ansible Docker Image (Python ${{ steps.python.outputs.minor }})" \
             --annotation index:org.opencontainers.image.licenses="MIT" \
             --annotation index:org.opencontainers.image.title="${{ github.repository }}" \
             --annotation index:org.opencontainers.image.url="https://github.com/${{ github.repository }}" \
