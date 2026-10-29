@@ -1,0 +1,189 @@
+name: cron-check-python
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the planned changes without pushing a branch or opening a PR'
+        type: boolean
+        default: false
+      core_version:
+        description: 'ansible-core version to evaluate (default: latest on PyPI)'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-python-version:
+    name: 🐍 Check Python Support
+    runs-on: ubuntu-26.04-arm
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BASE_BRANCH: develop
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+      CORE_VERSION: ${{ inputs.core_version }}
+      UPDATE_NEEDED: 'false'
+      TARGET_MINOR: ''
+      NEW_VERSION: ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+
+      - name: Decide target Python minor
+        run: |
+          minors() {
+            jq -r '.info.classifiers[] | select(test("^Programming Language :: Python :: 3\\.[0-9]+$")) | sub(".* :: "; "")' | sort -V
+          }
+
+          CURRENT_MINOR=$(sed -n 's|^FROM docker.io/library/python:\([0-9]*\.[0-9]*\)\..*|\1|p' Dockerfile)
+          if [ -z "$CURRENT_MINOR" ]; then
+            echo "::error::Failed to detect Python version from Dockerfile"
+            exit 1
+          fi
+
+          CORE_JSON=$(curl -fsSL "https://pypi.org/pypi/ansible-core${CORE_VERSION:+/$CORE_VERSION}/json")
+          CORE_LABEL=$(echo "$CORE_JSON" | jq -r '.info.version')
+          SUPPORTED=$(echo "$CORE_JSON" | minors)
+          SUPPORTED_LINE=$(echo "$SUPPORTED" | paste -sd' ' -)
+          if [ "$(echo "$SUPPORTED" | grep -c .)" -lt 3 ]; then
+            echo "::error::Expected at least 3 Python versions in ansible-core $CORE_LABEL classifiers, got: $SUPPORTED_LINE"
+            exit 1
+          fi
+
+          # Second newest supported minor: ansible-core keeps the newest three, so this one stays supported for another year
+          TARGET_MINOR=$(echo "$SUPPORTED" | tail -n 2 | head -n 1)
+          echo "ansible-core $CORE_LABEL supports Python: $SUPPORTED_LINE"
+          echo "Current: $CURRENT_MINOR, target: $TARGET_MINOR"
+
+          if [ "$(printf '%s\n%s\n' "$CURRENT_MINOR" "$TARGET_MINOR" | sort -V | tail -n 1)" != "$TARGET_MINOR" ] || [ "$CURRENT_MINOR" = "$TARGET_MINOR" ]; then
+            echo "Python $CURRENT_MINOR is already at or ahead of the target. Nothing to do."
+            exit 0
+          fi
+
+          # The pinned ansible-core must support the target too, otherwise the image would break
+          ANSIBLE_PINNED=$(sed -n 's/^ansible==//p' requirements.txt)
+          PINNED_CORE=$(curl -fsSL "https://pypi.org/pypi/ansible/${ANSIBLE_PINNED}/json" | jq -r '.info.requires_dist[] | select(startswith("ansible-core"))' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+          if [ -z "$PINNED_CORE" ]; then
+            echo "::error::Failed to resolve the ansible-core version pinned by ansible==$ANSIBLE_PINNED"
+            exit 1
+          fi
+          if ! curl -fsSL "https://pypi.org/pypi/ansible-core/${PINNED_CORE}/json" | minors | grep -qx "$TARGET_MINOR"; then
+            echo "::warning::Pinned ansible-core $PINNED_CORE does not support Python $TARGET_MINOR yet. Skipping."
+            exit 0
+          fi
+
+          {
+            echo "UPDATE_NEEDED=true"
+            echo "TARGET_MINOR=$TARGET_MINOR"
+            echo "CORE_LABEL=$CORE_LABEL"
+            echo "SUPPORTED_MINORS=$SUPPORTED_LINE"
+          } >> $GITHUB_ENV
+
+      - name: Check for existing Python PR
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          BRANCH="python/${TARGET_MINOR}"
+
+          # Any state counts, so a PR that was closed on purpose is not reopened every week
+          if [ "$(gh pr list --state all --head "$BRANCH" --json number --jq length)" -gt 0 ]; then
+            echo "A PR for Python ${TARGET_MINOR} already exists. Nothing to do."
+            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          # Avoid stacking Python PRs that touch the same lines
+          OPEN_COUNT=$(gh pr list --state open --base "$BASE_BRANCH" --json headRefName --jq '[.[] | select(.headRefName | startswith("python/"))] | length')
+          if [ "${OPEN_COUNT:-0}" -ge 1 ]; then
+            echo "Another Python PR is still open. Nothing to do."
+            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "::error::Branch $BRANCH exists without a PR. Delete it or open a PR from it."
+            exit 1
+          fi
+
+      - name: Resolve base image version
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          NEW_VERSION=$(docker run --rm "docker.io/library/python:${TARGET_MINOR}-slim" python -c 'import platform; print(platform.python_version())')
+          case "$NEW_VERSION" in
+            "${TARGET_MINOR}".*) ;;
+            *)
+              echo "::error::Unexpected Python version '$NEW_VERSION' for target $TARGET_MINOR"
+              exit 1
+              ;;
+          esac
+          docker buildx imagetools inspect "docker.io/library/python:${NEW_VERSION}-slim" > /dev/null
+          echo "Resolved python:${NEW_VERSION}-slim"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Create branch, update files and open PR
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          BRANCH="python/${TARGET_MINOR}"
+          TITLE="⬆️ dep(python): update python version to ${NEW_VERSION}"
+
+          sed -i "s|library/python:[0-9][0-9.]*-slim|library/python:${NEW_VERSION}-slim|g" Dockerfile
+          for f in readme.md readme-ko.md; do
+            sed -i "s|^- python == .*|- python == ${TARGET_MINOR}|" "$f"
+          done
+
+          # Fail loudly if a pattern drifted and a replacement did not land
+          if ! grep -qx "FROM docker.io/library/python:${NEW_VERSION}-slim" Dockerfile \
+            || [ "$(grep 'library/python:' Dockerfile | grep -vc "python:${NEW_VERSION}-slim")" != "0" ]; then
+            echo "::error::Dockerfile still references another Python version"
+            exit 1
+          fi
+          for f in readme.md readme-ko.md; do
+            if ! grep -qx -- "- python == ${TARGET_MINOR}" "$f"; then
+              echo "::error::$f was not updated"
+              exit 1
+            fi
+          done
+
+          git --no-pager diff
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: skipping branch push and PR."
+            exit 0
+          fi
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add Dockerfile readme.md readme-ko.md
+          git commit -m "$TITLE" -m "Move the base image to Python ${TARGET_MINOR}, the second newest minor supported by ansible-core."
+          git push origin "$BRANCH"
+
+          PR_BODY=$(cat <<EOF
+          Automatically created PR to update the base image to Python ${NEW_VERSION}.
+
+          ansible-core ${CORE_LABEL} supports Python ${SUPPORTED_MINORS}. This repository tracks the second newest supported minor, so ${TARGET_MINOR} is the target.
+
+          ### Changes
+
+          - Dockerfile: base image and base.name label
+          - readme.md, readme-ko.md: Python version
+
+          ### Before merging
+
+          - ci-develop builds and smoke-tests the image natively on amd64 and arm64 after the merge. Check that run before promoting to main.
+          - The interpreter inside the image changes for anyone pulling latest or a major tag. Consider mentioning it in the release notes.
+          - ci-main skips versions that already have a tag, so the new base image is only published with the next Ansible release.
+          - If Dependabot was told to ignore ${TARGET_MINOR}.x earlier, patch updates will not arrive until that ignore is cleared.
+          EOF
+          )
+          gh pr create \
+            --title "$TITLE" \
+            --body "$PR_BODY" \
+            --base "$BASE_BRANCH" \
+            --head "$BRANCH" \
+            --assignee "${{ github.repository_owner }}"
