@@ -101,7 +101,7 @@ docker pull ghcr.io/jyje/ansible:v13.7.0 # 특정 패치 버전
 이미지에는 다음과 같은 유틸리티가 미리 설치되어 있습니다:
 ```
 - ansible >= 14.0.0
-- python == 3.12.13
+- python == 3.13
 - pip
 
 - curl
