@@ -134,7 +134,7 @@ jobs:
 
           sed -i "s|library/python:[0-9][0-9.]*-slim|library/python:${NEW_VERSION}-slim|g" Dockerfile
           for f in readme.md readme-ko.md; do
-            sed -i "s|^- python == .*|- python == ${TARGET_MINOR}|" "$f"
+            sed -i "s|^- python == .*|- python == ${NEW_VERSION}|" "$f"
           done
 
           # Fail loudly if a pattern drifted and a replacement did not land
@@ -144,7 +144,7 @@ jobs:
             exit 1
           fi
           for f in readme.md readme-ko.md; do
-            if ! grep -qx -- "- python == ${TARGET_MINOR}" "$f"; then
+            if ! grep -qx -- "- python == ${NEW_VERSION}" "$f"; then
               echo "::error::$f was not updated"
               exit 1
             fi
